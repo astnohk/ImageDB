@@ -207,9 +207,11 @@ function createImageThumbnail(filepath, category, subcategories)
             thumbnail.info = document.createElement('div');
             thumbnail.info.className = 'image_info';
             const rect = thumbnail.getBoundingClientRect();
-            const root_rect = document.getElementById('images').getBoundingClientRect();
-            thumbnail.info.style.top = `${rect.bottom - root_rect.top - 40}px`;
-            thumbnail.info.style.left = `${rect.right - root_rect.left - 90}px`;
+            //const root_rect = document.getElementById('images').getBoundingClientRect();
+            //thumbnail.info.style.top = `${rect.bottom - root_rect.top - 40}px`;
+            //thumbnail.info.style.left = `${rect.right - root_rect.left - 90}px`;
+            thumbnail.info.style.top = `${rect.bottom - 40}px`;
+            thumbnail.info.style.left = `${rect.right - 90}px`;
             let text = `category: ${category}\n`;
             for (let subcategory of subcategories) {
                 text += `subcategory: ${subcategory}\n`;
@@ -219,7 +221,7 @@ function createImageThumbnail(filepath, category, subcategories)
             setTimeout(
                 () => {
                     if (!!thumbnail.info) {
-                        document.getElementById('images').appendChild(thumbnail.info);
+                        document.body.appendChild(thumbnail.info);
                     }
                 },
                 500);
@@ -335,7 +337,7 @@ function openImageViewer(thumbnail)
     let touches = [];
     let dx = 0;
     let dy = 0;
-    window.addEventListener(
+    viewer.addEventListener(
         'touchstart',
         (e) => {
             e.stopPropagation();
@@ -343,7 +345,7 @@ function openImageViewer(thumbnail)
             dx = 0;
             dy = 0;
         });
-    window.addEventListener(
+    viewer.addEventListener(
         'touchmove',
         (e) => {
             e.stopPropagation();
@@ -363,13 +365,6 @@ function openImageViewer(thumbnail)
                 dy = 0;
             }
             touches = e.touches;
-        });
-    window.addEventListener(
-        'touchend',
-        (e) => {
-            e.stopPropagation();
-            dx = 0;
-            dy = 0;
         });
 
     g_current_viewer = viewer;
