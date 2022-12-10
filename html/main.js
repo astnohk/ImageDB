@@ -2,7 +2,10 @@
 
 
 const url = new URL(window.location.href);
+const click_max_interval = 300; // [msec]
 var g_current_viewer = null;
+var g_dragging = null;
+var g_mousedown_time = new Date();
 
 
 window.onload = () => {
@@ -84,7 +87,7 @@ window.onload = () => {
                 // Open/Close feature
                 category_element.originalHeight = category_element.getBoundingClientRect().height;
                 category_element.style.height = '20px';
-                category_element.addEventListener(
+                category_element.buttonElement.addEventListener(
                     'click',
                     (e) => {
                         category_element.opening = !category_element.opening;
@@ -107,7 +110,6 @@ window.onload = () => {
             e.stopPropagation();
             let key_processed = false;
             if (!!g_current_viewer) {
-                console.log(e.key);
                 if (e.key === 'ArrowLeft') {
                     key_processed = true;
                     g_current_viewer.changeImage('prev');
@@ -121,6 +123,28 @@ window.onload = () => {
             }
             if (key_processed) {
                 e.preventDefault();
+            }
+        });
+    window.addEventListener(
+        'mousemove',
+        (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            const now = new Date();
+            if (!!g_dragging) {
+                // Dragging
+                moveDragImage(e);
+            }
+        });
+    window.addEventListener(
+        'mouseup',
+        (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            const now = new Date();
+            // Drag end
+            if (!!g_dragging) {
+                endDragImage(g_dragging);
             }
         });
 }
@@ -143,78 +167,149 @@ function getImagesInCategory(category, subcategories)
 
 function createImageThumbnail(image_url)
 {
-    const img = document.createElement('img');
-    img.className = 'thumbnails';
-    img.src = image_url;
-    img.addEventListener(
+    const thumbnail = document.createElement('img');
+    thumbnail.className = 'thumbnails';
+    thumbnail.src = image_url;
+    thumbnail.addEventListener(
+        'mousedown',
+        (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            g_mousedown_time = new Date();
+            // Dragging
+            startDragImage(thumbnail);
+        });
+    thumbnail.addEventListener(
         'click',
         (e) => {
             e.stopPropagation();
             e.preventDefault();
-            const viewer = document.createElement('img');
-            viewer.className = 'fullscreen_viewer';
-            viewer.src = img.src;
-            viewer.changeImage = (direction) => {
-                const images = document.getElementById('images');
-                let ind = 0;
-                for (let i = 0; i < images.children.length; ++i) {
-                    if (images.children[i].src === viewer.src) {
-                        ind = i;
-                        break;
-                    }
-                }
-                if (direction === 'prev') {
-                    ind -= 1;
-                    while (images.children.length > 0 && ind < 0) {
-                        ind += images.children.length;
-                    }
-                } else if (direction === 'next') {
-                    ind += 1;
-                    while (images.children.length > 0 && ind >= images.children.length) {
-                        ind -= images.children.length;
-                    }
-                }
-                // Update to new src
-                viewer.src = images.children[ind].src;
-            };
-            viewer.removeImage = () => {
-                const images = document.getElementById('images');
-                let ind = 0;
-                for (let i = 0; i < images.children.length; ++i) {
-                    if (images.children[i].src === viewer.src) {
-                        ind = i;
-                        break;
-                    }
-                }
-                // Remove
-                images.children[ind].remove();
-                // Move to next image
-                while (images.children.length > 0 && ind >= images.children.length) {
-                    ind -= images.children.length;
-                }
-                if (images.children.length == 0 || ind < 0) {
-                    viewer.remove();
-                } else {
-                    // Update to new src
-                    viewer.src = images.children[ind].src;
-                }
-            };
-
-            viewer.addEventListener('click', (e) => { viewer.remove(); });
-            viewer.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (e.deltaY > 0) {
-                    viewer.changeImage('next');
-                } else if (e.deltaY < 0) {
-                    viewer.changeImage('prev');
-                }
-            });
-
-            g_current_viewer = viewer;
-            document.body.appendChild(viewer);
+            openImageViewer(thumbnail);
         });
 
-    return img;
+    return thumbnail;
+}
+
+function openImageViewer(thumbnail)
+{
+    const viewer = document.createElement('img');
+    viewer.className = 'fullscreen_viewer';
+    viewer.src = thumbnail.src;
+    viewer.changeImage = (direction) => {
+        const images = document.getElementById('images');
+        let ind = 0;
+        for (let i = 0; i < images.children.length; ++i) {
+            if (images.children[i] == thumbnail) {
+                ind = i;
+                break;
+            }
+        }
+        if (direction === 'prev') {
+            ind -= 1;
+            if (ind < 0) {
+                ind += images.children.length;
+            }
+        } else if (direction === 'next') {
+            ind += 1;
+            ind = ind % images.children.length;
+        }
+        ind = Math.min(images.children.length - 1, Math.max(0, ind));
+        // Update to new src
+        if (ind >= 0) {
+            thumbnail = images.children[ind];
+            viewer.src = thumbnail.src;
+        }
+    };
+    viewer.removeImage = () => {
+        const images = document.getElementById('images');
+        let ind = 0;
+        for (let i = 0; i < images.children.length; ++i) {
+            if (images.children[i] == thumbnail) {
+                ind = i;
+                break;
+            }
+        }
+        ind = Math.min(images.children.length - 1, Math.max(0, ind));
+        // Move to next image
+        if (ind >= 0) {
+            // Update to new src
+            thumbnail = images.children[ind];
+            viewer.src = thumbnail.src;
+        } else {
+            viewer.remove();
+        }
+        // Remove thumbnail
+        thumbnail.remove();
+    };
+    viewer.addEventListener('click', (e) => { viewer.remove(); });
+    viewer.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.deltaY > 0) {
+            viewer.changeImage('next');
+        } else if (e.deltaY < 0) {
+            viewer.changeImage('prev');
+        }
+    });
+    g_current_viewer = viewer;
+    document.body.appendChild(viewer);
+}
+
+function startDragImage(image)
+{
+    if (!image) {
+        return;
+    }
+    g_dragging = image;
+    g_dragging.style.opacity = '0.5';
+    g_dragging.style.outlineStyle = 'dashed';
+}
+
+function moveDragImage(e)
+{
+    const now = new Date();
+    if (now - g_mousedown_time < click_max_interval) {
+        // Do NOT move the image
+        return;
+    }
+    const images = document.getElementById('images');
+    let left_index = -1;
+    let right_index = -1;
+    for (let i = 0; i < images.children.length; ++i) {
+        if (images.children[i] == g_dragging) {
+            continue;
+        }
+        const rect = images.children[i].getBoundingClientRect();
+        // Search nearest left or right element
+        if (rect.top <= e.clientY && e.clientY <= rect.bottom) {
+            const center = (rect.left + rect.right) * 0.5;
+            if (center < e.clientX) {
+                // Update nearer left element
+                left_index = i;
+            } else if (right_index < 0 && e.clientX < center) {
+                // Set nearest right element
+                right_index = i;
+            }
+        }
+        if (rect.top > e.clientY) {
+            break;
+        }
+    }
+    // Move emptyBox
+    if (right_index < 0 && left_index >= 0) {
+        if (left_index + 1 < images.children.length) {
+            right_index = left_index + 1;
+        }
+    }
+    // There are no other images
+    const right = right_index >= 0 ? images.children[right_index] : null;
+    images.insertBefore(g_dragging, right);
+}
+
+function endDragImage(image)
+{
+    g_dragging.style.opacity = '1.0';
+    g_dragging.style.outlineStyle = 'none';
+    g_dragging = null;
 }
 
