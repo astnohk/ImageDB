@@ -334,19 +334,23 @@ function openImageViewer(thumbnail)
     });
     let touches = [];
     let dx = 0;
+    let dy = 0;
     window.addEventListener(
         'touchstart',
         (e) => {
             e.stopPropagation();
             touches = e.touches;
             dx = 0;
+            dy = 0;
         });
     window.addEventListener(
         'touchmove',
         (e) => {
             e.stopPropagation();
             const w = window.innerWidth;
+            const h = window.innerHeight;
             dx += e.touches[0].clientX - touches[0].clientX;
+            dy += e.touches[0].clientY - touches[0].clientY;
             if (dx < -w * 0.1) {
                 viewer.changeImage('prev');
                 dx = 0;
@@ -354,7 +358,18 @@ function openImageViewer(thumbnail)
                 viewer.changeImage('next');
                 dx = 0;
             }
+            if (dy < -h * 0.4) {
+                viewer.removeImage();
+                dy = 0;
+            }
             touches = e.touches;
+        });
+    window.addEventListener(
+        'touchend',
+        (e) => {
+            e.stopPropagation();
+            dx = 0;
+            dy = 0;
         });
 
     g_current_viewer = viewer;
