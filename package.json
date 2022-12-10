@@ -1,0 +1,16 @@
+{
+  "name": "imagedb",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "live-server --https=./node_modules/live-server-https ."
+  },
+  "type": "module",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^7.6.2",
+    "ws": "^8.11.0"
+  }
+}
