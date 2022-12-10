@@ -197,23 +197,24 @@ function openImageViewer(thumbnail)
     viewer.src = thumbnail.src;
     viewer.changeImage = (direction) => {
         const images = document.getElementById('images');
-        let ind = 0;
-        for (let i = 0; i < images.children.length; ++i) {
-            if (images.children[i] == thumbnail) {
-                ind = i;
-                break;
+        let ind = -1;
+        if (images.children.length > 0) {
+            for (let i = 0; i < images.children.length; ++i) {
+                if (images.children[i] == thumbnail) {
+                    ind = i;
+                    break;
+                }
+            }
+            if (direction === 'prev') {
+                ind -= 1;
+                if (ind < 0) {
+                    ind += images.children.length;
+                }
+            } else if (direction === 'next') {
+                ind += 1;
+                ind = ind % images.children.length;
             }
         }
-        if (direction === 'prev') {
-            ind -= 1;
-            if (ind < 0) {
-                ind += images.children.length;
-            }
-        } else if (direction === 'next') {
-            ind += 1;
-            ind = ind % images.children.length;
-        }
-        ind = Math.min(images.children.length - 1, Math.max(0, ind));
         // Update to new src
         if (ind >= 0) {
             thumbnail = images.children[ind];
@@ -222,16 +223,19 @@ function openImageViewer(thumbnail)
     };
     viewer.removeImage = () => {
         const images = document.getElementById('images');
-        let ind = 0;
-        for (let i = 0; i < images.children.length; ++i) {
-            if (images.children[i] == thumbnail) {
-                ind = i;
-                break;
+        let removeTarget = thumbnail;
+        let ind = -1;
+        if (images.children.length > 0) {
+            for (let i = 0; i < images.children.length; ++i) {
+                if (images.children[i] == thumbnail) {
+                    ind = i;
+                    break;
+                }
             }
+            ind = (ind + 1) % images.children.length;
         }
-        ind = Math.min(images.children.length - 1, Math.max(0, ind));
         // Move to next image
-        if (ind >= 0) {
+        if (ind >= 0 && images.children[ind] != thumbnail) {
             // Update to new src
             thumbnail = images.children[ind];
             viewer.src = thumbnail.src;
@@ -239,7 +243,7 @@ function openImageViewer(thumbnail)
             viewer.remove();
         }
         // Remove thumbnail
-        thumbnail.remove();
+        removeTarget.remove();
     };
     viewer.addEventListener('click', (e) => { viewer.remove(); });
     viewer.addEventListener('wheel', (e) => {
