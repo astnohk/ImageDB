@@ -238,24 +238,31 @@ export function getCategoryImageList(dbname, category, subcategories)
         try {
             const db = new Database(dbname);
             let category_images = new Set();
-            // Get first subcategory images
-            {
-                const filepaths = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = '${category}' AND subcategory = '${subcategories[0]}'`).all();
+            if (!!subcategories && subcategories.length > 0) {
+                // Get first subcategory images
+                {
+                    const filepaths = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = '${category}' AND subcategory = '${subcategories[0]}'`).all();
+                    for (let filepath of filepaths) {
+                        category_images.add(filepath);
+                    }
+                }
+                // Filter by subcategories
+                for (let i = 1; i < subcategories.length; ++i) {
+                    const subcategory = subcategories[i];
+                    const filepaths = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = '${category}' AND subcategory = '${subcategory}'`).all();
+                    let intersection = new Set();
+                    for (let filepath of filepaths) {
+                        if (category_images.has(filepath)) {
+                            intersection.add(filepath);
+                        }
+                    }
+                    category_images = intersection;
+                }
+            } else {
+                const filepaths = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE category = '${category}'`).all();
                 for (let filepath of filepaths) {
                     category_images.add(filepath);
                 }
-            }
-            // Filter by subcategories
-            for (let i = 1; i < subcategories.length; ++i) {
-                const subcategory = subcategories[i];
-                const filepaths = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = '${category}' AND subcategory = '${subcategory}'`).all();
-                let intersection = new Set();
-                for (let filepath of filepaths) {
-                    if (category_images.has(filepath)) {
-                        intersection.add(filepath);
-                    }
-                }
-                category_images = intersection;
             }
             // Get image filepath list
             let images = [];

@@ -53,6 +53,13 @@ window.onload = () => {
                     const name = document.createElement('div');
                     name.className = 'categoryTitleName';
                     name.innerText = category_displayName[data.category];
+                    name.addEventListener(
+                        'click',
+                        (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            getImagesInCategory(data.category, []);
+                        });
                     title.appendChild(name);
 
                     category_element.subcategories = [];
@@ -119,6 +126,9 @@ window.onload = () => {
                 } else if (e.key === 'Delete') {
                     key_processed = true;
                     g_current_viewer.removeImage();
+                } else if (e.key === 'r') {
+                    key_processed = true;
+                    g_current_viewer.rotateImage(1);
                 }
             }
             if (key_processed) {
@@ -155,7 +165,7 @@ function getImagesInCategory(category, subcategories)
     for (let subcategory of subcategories) {
         query.push(`subcategory=${subcategory}`);
     }
-    fetch(`${url.origin}/getCategoryImageList?category=${category}&${query.join('&')}`)
+    fetch(`${url.origin}/getCategoryImageList?category=${category}${query.length > 0 ? '&' + query.join('&') : ''}`)
         .then(res => res.json())
         .then(list => {
             list.forEach(item => {
@@ -169,6 +179,7 @@ function createImageThumbnail(image_url)
 {
     const thumbnail = document.createElement('img');
     thumbnail.className = 'thumbnails';
+    thumbnail.imageRotation = 0;
     thumbnail.src = image_url;
     thumbnail.addEventListener(
         'mousedown',
@@ -219,6 +230,7 @@ function openImageViewer(thumbnail)
         if (ind >= 0) {
             thumbnail = images.children[ind];
             viewer.src = thumbnail.src;
+            viewer.rotateImage(0);
         }
     };
     viewer.removeImage = () => {
@@ -239,11 +251,40 @@ function openImageViewer(thumbnail)
             // Update to new src
             thumbnail = images.children[ind];
             viewer.src = thumbnail.src;
+            viewer.rotateImage(0);
         } else {
             viewer.remove();
         }
         // Remove thumbnail
         removeTarget.remove();
+    };
+    viewer.rotateImage = (rotate) => {
+        thumbnail.imageRotation = (thumbnail.imageRotation + rotate) % 4;
+        if (thumbnail.imageRotation == 0) {
+            viewer.style.rotate = '0deg';
+            viewer.style.top = '0px';
+            viewer.style.left = '0px';
+            viewer.style.width = '100%';
+            viewer.style.height = '100%';
+        } else if (thumbnail.imageRotation == 1) {
+            viewer.style.rotate = '90deg';
+            viewer.style.top = `${Math.floor((window.innerWidth - window.innerHeight) * -0.5)}px`;
+            viewer.style.left = `${Math.floor((window.innerHeight - window.innerWidth) * -0.5)}px`;
+            viewer.style.width = `${window.innerHeight + 1}px`;
+            viewer.style.height = `${window.innerWidth + 1}px`;
+        } else if (thumbnail.imageRotation == 2) {
+            viewer.style.rotate = '180deg';
+            viewer.style.top = '0px';
+            viewer.style.left = '0px';
+            viewer.style.width = '100%';
+            viewer.style.height = '100%';
+        } else if (thumbnail.imageRotation == 3) {
+            viewer.style.rotate = '270deg';
+            viewer.style.top = `${Math.floor((window.innerWidth - window.innerHeight) * -0.5)}px`;
+            viewer.style.left = `${Math.floor((window.innerHeight - window.innerWidth) * -0.5)}px`;
+            viewer.style.width = `${window.innerHeight + 1}px`;
+            viewer.style.height = `${window.innerWidth + 1}px`;
+        }
     };
     viewer.addEventListener('click', (e) => { viewer.remove(); });
     viewer.addEventListener('wheel', (e) => {
@@ -256,6 +297,8 @@ function openImageViewer(thumbnail)
         }
     });
     g_current_viewer = viewer;
+    // Apply rotation
+    viewer.rotateImage(0);
     document.body.appendChild(viewer);
 }
 

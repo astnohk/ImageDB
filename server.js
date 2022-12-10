@@ -17,7 +17,6 @@ const server = https.createServer({
 });
 server.on('request', (request, response) => {
     const url = new URL(`https://localhost${request.url}`);
-    console.log(url);
     request.on('data', (chunk) => {
         console.log(`BODY: ${chunk}`);
     });
