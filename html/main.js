@@ -10,107 +10,87 @@ var g_mousedown_time = new Date();
 
 window.onload = () => {
     const category_displayName = {};
+    const subcategory_displayName = {};
+    const directory_displayName = {};
     const category_elements = {};
+    const directory_elements = {};
     fetch(`${url.origin}/getCategoryList`)
-        .then(res => res.json())
+        .then(res => res.json()) // { category:, displayName: category_displayName }
         .then(list => {
             list.forEach(row => {
                 category_displayName[row.category] = row.displayName;
             });
         })
         .then(res => fetch(`${url.origin}/getSubCategoryList`))
-        .then(res => res.json())
+        .then(res => res.json()) // { category:, subcategory:, displayName: subcategory_displayName }
         .then(list => {
-            list.forEach(data => {
+            list.forEach(row => {
+                subcategory_displayName[row.subcategory] = row.displayName;
+            });
+            list.forEach(row => {
                 let category_element = null;
-                if (!!category_elements[data.category]) {
-                    category_element = category_elements[data.category];
+                if (!!category_elements[row.category]) {
+                    category_element = category_elements[row.category];
                 } else {
-                    category_element = document.createElement('div');
-                    category_element.className = 'category';
-                    category_element.opening = false;
-                    // Title
-                    const title = document.createElement('div');
-                    title.className = 'categoryTitle';
-                    category_element.appendChild(title);
-                    // Button
-                    const button = document.createElement('canvas');
-                    button.className = 'categoryTitleButton';
-                    button.width = 20;
-                    button.height = 20;
-                    button.style.rotate = '0deg';
-                    const ctx = button.getContext('2d');
-                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                    ctx.strokeStyle = 'rgb(0, 0, 0)';
-                    ctx.beginPath();
-                    ctx.moveTo(ctx.canvas.width * 0.3, ctx.canvas.height * 0.2);
-                    ctx.lineTo(ctx.canvas.width * 0.7, ctx.canvas.height * 0.5);
-                    ctx.lineTo(ctx.canvas.width * 0.3, ctx.canvas.height * 0.8);
-                    ctx.stroke();
-                    category_element.buttonElement = button;
-                    title.appendChild(button);
-                    // Name
-                    const name = document.createElement('div');
-                    name.className = 'categoryTitleName';
-                    name.innerText = category_displayName[data.category];
-                    name.addEventListener(
-                        'click',
-                        (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            getImagesInCategory(data.category, []);
-                        });
-                    title.appendChild(name);
-
-                    category_element.subcategories = [];
-                    category_elements[data.category] = category_element;
+                    category_element = createCategoryElement(row, category_displayName[row.category], categoryNameClickFunction(row.category));
+                    category_elements[row.category] = category_element;
                 }
-                const subcategory = document.createElement('div');
-                subcategory.className = 'subcategory';
-                subcategory.displayName = data.displayName;
-                subcategory.innerText = `+ ${data.displayName}`;
-                subcategory.addEventListener(
-                    'click',
-                    (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        getImagesInCategory(data.category, [ data.subcategory ]);
-                    });
+                const subcategory = createSubCategoryElement(row);
                 category_element.subcategories.push(subcategory);
             });
             // Append to web page
-            let category_elements_keys = Object.keys(category_elements);
-            category_elements_keys.sort();
-            for (let category of category_elements_keys) {
-                const category_element = category_elements[category];
-                category_element.subcategories.sort((a, b) => {
-                    return a.displayName.localeCompare(b.displayName);
-                });
-                for (let subcategory of category_element.subcategories) {
-                    category_element.appendChild(subcategory);
+            setCategoryInCategories(category_elements);
+        })
+        .catch(err => {
+            console.error(err);
+        })
+        .then(arg => fetch(`${url.origin}/getDirectoryList`))
+        .then(res => res.json()) // { directory:, displayName: directory_displayName }
+        .then(list => {
+            list.forEach(row => {
+                directory_displayName[row.directory] = row.displayName;
+            })
+        })
+        .then(arg => fetch(`${url.origin}/getDirectorySubCategoryList`))
+        .then(res => res.json()) // { directory:, category:, subcategory:, displayName: directory_displayName }
+        .then(list => {
+            list.forEach(row => {
+                let directory_element = null;
+                if (!!directory_elements[row.directory]) {
+                    directory_element = directory_elements[row.directory];
+                } else {
+                    directory_element = createCategoryElement(row, directory_displayName[row.directory], directoryNameClickFunction(row.directory));
+                    directory_elements[row.directory] = directory_element;
                 }
-                // Append list to page
-                document.getElementById('categories').appendChild(category_element);
-                // Open/Close feature
-                category_element.originalHeight = category_element.getBoundingClientRect().height;
-                category_element.style.height = '20px';
-                category_element.buttonElement.addEventListener(
-                    'click',
-                    (e) => {
-                        category_element.opening = !category_element.opening;
-                        if (category_element.opening) {
-                            category_element.buttonElement.style.rotate = '90deg';
-                            category_element.style.height = `${category_element.originalHeight}px`;
-                        } else {
-                            category_element.buttonElement.style.rotate = '0deg';
-                            category_element.style.height = '20px';
-                        }
-                    });
-            }
+                const subcategory = createDirectorySubCategoryElement(row.directory, row.category, [ row.subcategory ], subcategory_displayName[row.subcategory]);
+                directory_element.subcategories.push(subcategory);
+            });
+            // Do NOT append to list yet.
         })
         .catch(err => {
             console.error(err);
         });
+
+    const category_menu_mode = document.getElementById('category_menu_mode')
+    category_menu_mode.addEventListener(
+        'change',
+        (e) => {
+            const mode = category_menu_mode.value;
+            const categories = document.getElementById('categories');
+            // Append to web page
+            if (mode === 'Category') {
+                for (let i = categories.childElementCount - 1; i >= 0; --i) {
+                    categories.removeChild(categories.children[i]);
+                }
+                setCategoryInCategories(category_elements);
+            } else if (mode === 'Directory') {
+                for (let i = categories.childElementCount - 1; i >= 0; --i) {
+                    categories.removeChild(categories.children[i]);
+                }
+                setCategoryInCategories(directory_elements);
+            }
+        });
+
     window.addEventListener(
         'keydown',
         (e) => {
@@ -159,13 +139,162 @@ window.onload = () => {
         });
 }
 
+function createCategoryElement(data, displayName, nameClickFunction)
+{
+    const category_element = document.createElement('div');
+    category_element.className = 'category';
+    category_element.opening = false;
+    // Title
+    const title = document.createElement('div');
+    title.className = 'categoryTitle';
+    category_element.appendChild(title);
+    // Button
+    category_element.buttonElement = createCategoryTitleButton();
+    title.appendChild(category_element.buttonElement);
+    // Name
+    const name = document.createElement('div');
+    name.className = 'categoryTitleName';
+    name.innerText = displayName;
+    name.addEventListener(
+        'click',
+        nameClickFunction);
+    title.appendChild(name);
+    // Init Subcategories
+    category_element.subcategories = [];
+
+    // Open/Close feature
+    category_element.setOpenCloseButtonEventListener = () => {
+        if (!!category_element.buttonElement.onclick) {
+            return;
+        }
+        category_element.originalHeight = category_element.getBoundingClientRect().height;
+        category_element.style.height = '20px';
+        category_element.buttonElement.onclick = (e) => {
+            category_element.opening = !category_element.opening;
+            if (category_element.opening) {
+                category_element.buttonElement.style.rotate = '90deg';
+                category_element.style.height = `${category_element.originalHeight}px`;
+            } else {
+                category_element.buttonElement.style.rotate = '0deg';
+                category_element.style.height = '20px';
+            }
+        };
+    };
+
+    return category_element;
+}
+
+function categoryNameClickFunction(category)
+{
+    return (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        getImagesInCategory(category, []);
+    };
+}
+
+function directoryNameClickFunction(directory)
+{
+    return (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        getImagesInDirectory(directory, null, []);
+    };
+}
+
+function createCategoryTitleButton()
+{
+    const button = document.createElement('canvas');
+    button.className = 'categoryTitleButton';
+    button.width = 20;
+    button.height = 20;
+    button.style.rotate = '0deg';
+    const ctx = button.getContext('2d');
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.strokeStyle = 'rgb(0, 0, 0)';
+    ctx.beginPath();
+    ctx.moveTo(ctx.canvas.width * 0.3, ctx.canvas.height * 0.2);
+    ctx.lineTo(ctx.canvas.width * 0.7, ctx.canvas.height * 0.5);
+    ctx.lineTo(ctx.canvas.width * 0.3, ctx.canvas.height * 0.8);
+    ctx.stroke();
+
+    return button;
+}
+
+function createSubCategoryElement(data)
+{
+    const subcategory = document.createElement('div');
+    subcategory.className = 'subcategory';
+    subcategory.displayName = data.displayName;
+    subcategory.innerText = `+ ${data.displayName}`;
+    subcategory.addEventListener(
+        'click',
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            getImagesInCategory(data.category, [ data.subcategory ]);
+        });
+    return subcategory;
+}
+
+function createDirectorySubCategoryElement(directory, category, subcategories, displayName)
+{
+    const subcategory = document.createElement('div');
+    subcategory.className = 'subcategory';
+    subcategory.displayName = displayName;
+    subcategory.innerText = `+ ${displayName}`;
+    subcategory.addEventListener(
+        'click',
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            getImagesInDirectory(directory, category, subcategories);
+        });
+    return subcategory;
+}
+
+function setCategoryInCategories(category_elements)
+{
+    let category_elements_keys = Object.keys(category_elements);
+    category_elements_keys.sort();
+    for (let category of category_elements_keys) {
+        const category_element = category_elements[category];
+        category_element.subcategories.sort((a, b) => {
+                return a.displayName.localeCompare(b.displayName);
+                });
+        for (let subcategory of category_element.subcategories) {
+            category_element.appendChild(subcategory);
+        }
+        // Append category list to page
+        document.getElementById('categories').appendChild(category_element);
+        // Init button's event listener
+        category_element.setOpenCloseButtonEventListener();
+    }
+}
+
 function getImagesInCategory(category, subcategories)
 {
     let query = [];
     for (let subcategory of subcategories) {
-        query.push(`subcategory=${subcategory}`);
+        query.push(`subcategory=${encodeURIComponent(subcategory)}`);
     }
-    fetch(`${url.origin}/getCategoryImageList?category=${category}${query.length > 0 ? '&' + query.join('&') : ''}`)
+    fetch(`${url.origin}/getCategoryImageList?category=${encodeURIComponent(category)}${query.length > 0 ? '&' + query.join('&') : ''}`)
+        .then(res => res.json())
+        .then(list => {
+            list.forEach(item => {
+                document.getElementById('images').appendChild(
+                    createImageThumbnail(item.filepath, category, subcategories));
+            });
+        });
+}
+
+function getImagesInDirectory(directory, category, subcategories)
+{
+    let query = [];
+    for (let subcategory of subcategories) {
+        query.push(`subcategory=${encodeURIComponent(subcategory)}`);
+    }
+    fetch(`${url.origin}/getDirectoryImageList?directory=${encodeURIComponent(directory)}${!!category ? '&category=' + encodeURIComponent(category) : ''}${query.length > 0 ? '&' + query.join('&') : ''}`)
         .then(res => res.json())
         .then(list => {
             list.forEach(item => {

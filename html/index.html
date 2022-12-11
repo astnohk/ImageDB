@@ -19,9 +19,17 @@
     bottom: 4px;
 }
 
-#categories {
+#category_menu_mode {
     position: absolute;
     top: 0px;
+    left: 0px;
+    width: 180px;
+    font-size: 16px;
+    font-weight: normal;
+}
+#categories {
+    position: absolute;
+    top: 20px;
     left: 0px;
     bottom: 0px;
     width: 180px;
@@ -114,6 +122,10 @@
 Image DB
 </div>
 <div id="mainview">
+    <select id="category_menu_mode">
+        <option>Category</option>
+        <option>Directory</option>
+    </select>
     <span id="categories">
     </span>
     <span id="images">

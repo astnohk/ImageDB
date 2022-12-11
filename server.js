@@ -24,9 +24,21 @@ server.on('request', (request, response) => {
         try {
             if (url.pathname === '/getCategoryList') {
                 database.getCategoryList(dbname)
-                    .then(categories => {
+                    .then(values => {
                         response.writeHead(200, { "Content-Type": "application/json" });
-                        const body = JSON.stringify(categories);
+                        const body = JSON.stringify(values);
+                        response.end(body);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        response.writeHead(500, { "Content-Type": "text/plain" });
+                        response.end('500 Interval Server Error');
+                    });
+            } else if (url.pathname === '/getDirectoryList') {
+                database.getDirectoryList(dbname)
+                    .then(values => {
+                        response.writeHead(200, { "Content-Type": "application/json" });
+                        const body = JSON.stringify(values);
                         response.end(body);
                     })
                     .catch(err => {
@@ -36,9 +48,21 @@ server.on('request', (request, response) => {
                     });
             } else if (url.pathname === '/getSubCategoryList') {
                 database.getSubCategoryList(dbname)
-                    .then(subcategories => {
+                    .then(values => {
                         response.writeHead(200, { "Content-Type": "application/json" });
-                        const body = JSON.stringify(subcategories);
+                        const body = JSON.stringify(values);
+                        response.end(body);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        response.writeHead(500, { "Content-Type": "text/plain" });
+                        response.end('500 Interval Server Error');
+                    });
+            } else if (url.pathname === '/getDirectorySubCategoryList') {
+                database.getDirectorySubCategoryList(dbname)
+                    .then(values => {
+                        response.writeHead(200, { "Content-Type": "application/json" });
+                        const body = JSON.stringify(values);
                         response.end(body);
                     })
                     .catch(err => {
@@ -48,9 +72,9 @@ server.on('request', (request, response) => {
                     });
             } else if (url.pathname === '/getImageList') {
                 database.getImageList(dbname)
-                    .then(images => {
+                    .then(values => {
                         response.writeHead(200, { "Content-Type": "application/json" });
-                        const body = JSON.stringify(images);
+                        const body = JSON.stringify(values);
                         response.end(body);
                     })
                     .catch(err => {
@@ -70,10 +94,45 @@ server.on('request', (request, response) => {
                         response.end('500 Interval Server Error');
                     });
             } else if (url.pathname === '/getCategoryImageList') {
-                database.getCategoryImageList(dbname, url.searchParams.get('category'), url.searchParams.getAll('subcategory'))
-                    .then(images => {
+                database.getCategoryImageList(
+                    dbname,
+                    url.searchParams.get('category'),
+                    url.searchParams.getAll('subcategory'))
+                    .then(values => {
                         response.writeHead(200, { "Content-Type": "application/json" });
-                        const body = JSON.stringify(images);
+                        const body = JSON.stringify(values);
+                        response.end(body);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        response.writeHead(500, { "Content-Type": "text/plain" });
+                        response.end('500 Interval Server Error');
+                    });
+            } else if (url.pathname === '/getDirectoryImageList') {
+                const directory = url.searchParams.get('directory');
+                const category = url.searchParams.get('category');
+                database.getDirectoryImageList(
+                    dbname,
+                    url.searchParams.get('directory'),
+                    url.searchParams.get('category'),
+                    url.searchParams.getAll('subcategory'))
+                    .then(values => {
+                        response.writeHead(200, { "Content-Type": "application/json" });
+                        const body = JSON.stringify(values);
+                        response.end(body);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        response.writeHead(500, { "Content-Type": "text/plain" });
+                        response.end('500 Interval Server Error');
+                    });
+            } else if (url.pathname === '/getPlaylistImageList') {
+                database.getPlaylistImageList(
+                    dbname,
+                    url.searchParams.get('playlist'))
+                    .then(values => {
+                        response.writeHead(200, { "Content-Type": "application/json" });
+                        const body = JSON.stringify(values);
                         response.end(body);
                     })
                     .catch(err => {
@@ -121,8 +180,12 @@ server.on('request', (request, response) => {
 
 function loadImage(filepath)
 {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
+            if (!database.checkImageFilepath(dbname, filepath)) {
+                // Filepath is not registered
+                reject();
+            }
             const file = fs.readFileSync(filepath);
             let mime = '';
             const ext = path.extname(filepath).toLowerCase();
@@ -147,5 +210,6 @@ function loadImage(filepath)
 }
 
 
-
+// Start HTTPS server
 server.listen('8443');
+

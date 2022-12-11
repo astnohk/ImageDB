@@ -13,8 +13,10 @@ const dbname = 'main.db';
 function searchDirs(root)
 {
     let images = {
+        directories: new Set(),
         categories: new Set(),
         subcategories: new Set(),
+        directorySubcategories: new Set(),
         subcategoryImages: [],
         images: [],
     };
@@ -27,6 +29,7 @@ function searchDirs(root)
                 file.name.slice(-3).toLowerCase() === 'png' ||
                 file.name.slice(-3).toLowerCase() === 'webp')
             {
+                images.directories.add(root);
                 const filepath = path.join(root, file.name);
                 const stat = fs.lstatSync(filepath)
                 const split_ = path.basename(file.name).split('_');
@@ -48,6 +51,7 @@ function searchDirs(root)
                             continue;
                         }
                         images.subcategories.add({ category: category, subcategory: split_[i] });
+                        images.directorySubcategories.add({ directory: root, category: category, subcategory: split_[i] });
                         images.subcategoryImages.push({ category: category, subcategory: split_[i], filepath: filepath });
                     }
                 }
@@ -56,6 +60,7 @@ function searchDirs(root)
                     filepath: filepath,
                     name: file.name,
                     category: category,
+                    directory: root,
                     size: stat.size,
                     ctime: utils.getDatetimeISOStringWithOffset(stat.ctime),
                     mtime: utils.getDatetimeISOStringWithOffset(stat.mtime),
@@ -64,11 +69,17 @@ function searchDirs(root)
         } else if (file.isDirectory()) {
             const tmp = searchDirs(path.join(root, file.name));
             images.images = images.images.concat(tmp.images);
+            for (let dir of tmp.directories.values()) {
+                images.directories.add(dir);
+            }
             for (let cat of tmp.categories.values()) {
                 images.categories.add(cat);
             }
             for (let cat of tmp.subcategories.values()) {
                 images.subcategories.add(cat);
+            }
+            for (let cat of tmp.directorySubcategories.values()) {
+                images.directorySubcategories.add(cat);
             }
             images.subcategoryImages = images.subcategoryImages.concat(tmp.subcategoryImages);
         }
@@ -82,11 +93,13 @@ function main()
 {
     // Create Tables
     database.createTableImages(dbname);
+    database.createTableDirectories(dbname);
     database.createTableCategories(dbname);
     database.createTableSubCategories(dbname);
+    database.createTableDirectorySubCategories(dbname);
     database.createTableSubCategoryImages(dbname);
-    database.createTableDirectories(dbname);
-    database.createTableDirectoryImages(dbname);
+    database.createTablePlaylists(dbname);
+    database.createTablePlaylistImages(dbname);
 
     // Search files
     console.log(process.argv);
@@ -96,6 +109,10 @@ function main()
     }
     console.log(`Read '${process.argv[2]}'...`);
     const images = searchDirs(process.argv[2]);
+    let directories = [];
+    for (let dir of images.directories.values()) {
+        directories.push({ directory: dir, displayName: path.basename(dir) });
+    }
     let categories = [];
     for (let cat of images.categories.values()) {
         categories.push({ category: cat, displayName: cat });
@@ -104,14 +121,18 @@ function main()
     for (let cat of images.subcategories.values()) {
         subcategories.push({ category: cat.category, subcategory: cat.subcategory, displayName: cat.subcategory });
     }
+    let directorySubcategories = [];
+    for (let cat of images.directorySubcategories.values()) {
+        directorySubcategories.push({ directory: cat.directory, category: cat.category, subcategory: cat.subcategory });
+    }
 
     // Insert to DB
     database.insertImages(dbname, images.images);
+    database.insertDirectories(dbname, directories);
     database.insertCategories(dbname, categories);
     database.insertSubCategories(dbname, subcategories);
+    database.insertDirectorySubCategories(dbname, directorySubcategories);
     database.insertSubCategoryImages(dbname, images.subcategoryImages);
-    //database.insertDirectories(dbname, directories);
-    //database.insertDirectoryImages(dbname, directoryImages);
 }
 
 // Call main
