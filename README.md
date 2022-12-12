@@ -37,7 +37,7 @@ And open `https://127.0.0.1:8443` in your browser. It shows the main window as b
 
 ![First Window](./docs/images/main_screen_0001.jpg)
 
-Tags will be shown if you click on '>' mark at the left of category name. You also be able to load some images by clicking on category or tags in left column.
+Tags will be shown if you click on `>` mark at the left of category name. You also be able to load some images by clicking on category or tags in left column.
 
 ![Load Images](./docs/images/main_screen_0002.jpg)
 
