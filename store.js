@@ -108,7 +108,12 @@ function main()
         return;
     }
     console.log(`Read '${process.argv[2]}'...`);
-    const images = searchDirs(process.argv[2]);
+    let rootDir = process.argv[2];
+    let rootDirMatch = rootDir.match(/([a-z]:)(.+)/);
+    if (rootDirMatch && rootDirMatch.index == 0) {
+        rootDir = `${rootDirMatch[1].toUpperCase()}${rootDirMatch[2]}`;
+    }
+    const images = searchDirs(rootDir);
     let directories = [];
     for (let dir of images.directories.values()) {
         directories.push({ directory: dir, displayName: path.basename(dir) });
