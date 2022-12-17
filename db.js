@@ -25,6 +25,7 @@ export function createTableImages(dbname)
         'size INTEGER NOT NULL,' +
         'ctime INTEGER NOT NULL,' +
         'mtime INTEGER NOT NULL,' +
+        'image BLOB,' +
         'PRIMARY KEY (filepath))')
         .run();
 }
@@ -39,7 +40,8 @@ export function insertImages(dbname, images)
         'directory,' +
         'size,' +
         'ctime,' +
-        'mtime' +
+        'mtime,' +
+        'image' +
         ') VALUES (' +
         '@filepath,' +
         '@name,' +
@@ -47,7 +49,8 @@ export function insertImages(dbname, images)
         '@directory,' +
         '@size,' +
         '@ctime,' +
-        '@mtime' +
+        '@mtime,' +
+        '@image' +
         ')');
     const insertMany = db.transaction((vals) => {
         vals.forEach(val => { insert.run(val); });
@@ -324,19 +327,6 @@ export function checkImageFilepath(dbname, filepath)
     });
 }
 
-export function getImageList(dbname)
-{
-    return new Promise((resolve, reject) => {
-        try {
-            const db = new Database(dbname);
-            const values = db.prepare(`SELECT filepath,name,category FROM ${table_name_images}`).all();
-            resolve(values);
-        } catch (err) {
-            reject(err);
-        }
-    });
-}
-
 export function getCategoryImageList(dbname, category, subcategories)
 {
     return new Promise((resolve, reject) => {
@@ -432,6 +422,19 @@ export function getPlaylistImageList(dbname, playlist)
             const db = new Database(dbname);
             const images = db.prepare(`SELECT filepath FROM ${table_name_playlist_images} WHERE playlist = '${decodeURIComponent(playlist)}'`).all();
             resolve(images);
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+export function getThumbnailImage(dbname, filepath)
+{
+    return new Promise((resolve, reject) => {
+        try {
+            const db = new Database(dbname);
+            const row = db.prepare(`SELECT image FROM ${table_name_images} WHERE filepath = ?`).get(filepath);
+            resolve({ file: row.image, MIMEType: 'image/png' });
         } catch (err) {
             reject(err);
         }

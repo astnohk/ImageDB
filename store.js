@@ -2,15 +2,37 @@ import fsPromises from 'node:fs/promises';
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import sharp from 'sharp';
 
 import * as database from './db.js';
 import * as utils from './utils.js';
 
-
+const thumbnail_size = 200;
 const dbname = 'main.db';
 
 
-function searchDirs(root)
+
+const fileReadingPromisesCountMax = 2000;
+let fileReadingPromisesCount = 0; // Current file reding promises
+
+function waitFileReadingPromises()
+{
+    return new Promise((resolve) => {
+        const check = () => {
+            if (fileReadingPromisesCount < fileReadingPromisesCountMax) {
+                fileReadingPromisesCount += 1;
+                resolve();
+            } else {
+                setTimeout(check, 100);
+            }
+        };
+        check();
+    });
+}
+
+
+
+async function searchDirs(root)
 {
     let images = {
         directories: new Set(),
@@ -22,7 +44,7 @@ function searchDirs(root)
     };
 
     const dir = fs.readdirSync(root, { withFileTypes: true });
-    dir.forEach((file) => {
+    for (let file of dir) {
         if (file.isFile()) {
             if (file.name.slice(-3).toLowerCase() === 'gif' ||
                 file.name.slice(-3).toLowerCase() === 'jpg' || file.name.slice(-4).toLowerCase() === 'jpeg' ||
@@ -33,11 +55,13 @@ function searchDirs(root)
                 const filepath = path.join(root, file.name);
                 const stat = fs.lstatSync(filepath)
                 const split_ = path.basename(file.name).split('_');
+                // Parse Category
                 let category = '';
                 if (split_.length >= 2) {
                     category = split_[0];
                     images.categories.add(category);
                 }
+                // Parse Subcategories
                 if (split_.length >= 3) {
                     for (let i = 1; i < split_.length - 1; ++i) {
                         let rNumber = split_[i].match(/[0-9]+/);
@@ -55,6 +79,12 @@ function searchDirs(root)
                         images.subcategoryImages.push({ category: category, subcategory: split_[i], filepath: filepath });
                     }
                 }
+                // Create thumbnail image
+                const image = createThumbnailImage(filepath)
+                    .catch(err => {
+                        console.error(`error on processing '${filepath}'`);
+                        console.error(err);
+                    });
                 images.images.push({
                     ino: stat.ino,
                     filepath: filepath,
@@ -64,10 +94,11 @@ function searchDirs(root)
                     size: stat.size,
                     ctime: utils.getDatetimeISOStringWithOffset(stat.ctime),
                     mtime: utils.getDatetimeISOStringWithOffset(stat.mtime),
+                    image: image,
                 });
             }
         } else if (file.isDirectory()) {
-            const tmp = searchDirs(path.join(root, file.name));
+            const tmp = await searchDirs(path.join(root, file.name));
             images.images = images.images.concat(tmp.images);
             for (let dir of tmp.directories.values()) {
                 images.directories.add(dir);
@@ -83,13 +114,35 @@ function searchDirs(root)
             }
             images.subcategoryImages = images.subcategoryImages.concat(tmp.subcategoryImages);
         }
-    });
+    }
 
     return images;
 }
 
+function createThumbnailImage(filepath)
+{
+    return new Promise(async (resolve, reject) => {
+        try {
+            await waitFileReadingPromises();
+            const file = await fsPromises.readFile(filepath);
+            fileReadingPromisesCount -= 1;
+            const image = await sharp(file)
+                .resize(thumbnail_size, thumbnail_size, {
+                    fit: 'contain',
+                    background: { r: 0, g: 0, b: 0, alpha: 0.0 },
+                })
+                .png()
+                .toBuffer({ resolveWithObject: false })
+                .catch(err => reject(err));
+            resolve(image);
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
 
-function main()
+
+async function main()
 {
     // Create Tables
     database.createTableImages(dbname);
@@ -113,7 +166,10 @@ function main()
     if (rootDirMatch && rootDirMatch.index == 0) {
         rootDir = `${rootDirMatch[1].toUpperCase()}${rootDirMatch[2]}`;
     }
-    const images = searchDirs(rootDir);
+    console.log('Read image files...');
+    const images = await searchDirs(rootDir);
+    console.log('done.');
+    console.log('Parse results...');
     let directories = [];
     for (let dir of images.directories.values()) {
         directories.push({ directory: dir, displayName: path.basename(dir) });
@@ -130,8 +186,21 @@ function main()
     for (let cat of images.directorySubcategories.values()) {
         directorySubcategories.push({ directory: cat.directory, category: cat.category, subcategory: cat.subcategory });
     }
+    console.log('done.');
 
-    // Insert to DB
+    console.log('Create thumbnail images...');
+    try {
+        for (let i = 0; i < images.images.length; ++i) {
+            const image = await images.images[i].image;
+            images.images[i].image = image;
+        }
+    } catch (err) {
+        console.error(err);
+        return;
+    }
+    console.log('done.');
+
+    console.log(`Insert data to DB (${dbname})`);
     database.insertImages(dbname, images.images);
     database.insertDirectories(dbname, directories);
     database.insertCategories(dbname, categories);
@@ -141,5 +210,5 @@ function main()
 }
 
 // Call main
-main();
+main()
 

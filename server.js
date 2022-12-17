@@ -17,6 +17,7 @@ const server = https.createServer({
 });
 server.on('request', (request, response) => {
     const url = new URL(`https://localhost${request.url}`);
+    console.log(request.url);
     request.on('data', (chunk) => {
         console.log(`BODY: ${chunk}`);
     });
@@ -84,6 +85,17 @@ server.on('request', (request, response) => {
                     });
             } else if (url.pathname === '/getImage') {
                 loadImage(decodeURIComponent(url.searchParams.get('filepath')))
+                    .then(image => {
+                        response.writeHead(200, { "Content-Type": image.MIMEType });
+                        response.end(image.file);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        response.writeHead(500, { "Content-Type": "text/plain" });
+                        response.end('500 Interval Server Error');
+                    });
+            } else if (url.pathname === '/getThumbnailImage') {
+                database.getThumbnailImage(dbname, url.searchParams.get('filepath'))
                     .then(image => {
                         response.writeHead(200, { "Content-Type": image.MIMEType });
                         response.end(image.file);

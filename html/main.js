@@ -309,7 +309,8 @@ function createImageThumbnail(filepath, category, subcategories)
     const thumbnail = document.createElement('img');
     thumbnail.className = 'thumbnails';
     thumbnail.imageRotation = 0;
-    thumbnail.src = `/getImage?filepath=${encodeURIComponent(filepath)}`;
+    thumbnail.src = `/getThumbnailImage?filepath=${encodeURIComponent(filepath)}`;
+    thumbnail.originalSourceURL = `/getImage?filepath=${encodeURIComponent(filepath)}`;
     thumbnail.addEventListener(
         'mousedown',
         (e) => {
@@ -371,7 +372,7 @@ function openImageViewer(thumbnail)
 {
     const viewer = document.createElement('img');
     viewer.className = 'fullscreen_viewer';
-    viewer.src = thumbnail.src;
+    viewer.src = thumbnail.originalSourceURL;
     viewer.changeImage = (direction) => {
         const images = document.getElementById('images');
         let ind = -1;
@@ -395,7 +396,7 @@ function openImageViewer(thumbnail)
         // Update to new src
         if (ind >= 0) {
             thumbnail = images.children[ind];
-            viewer.src = thumbnail.src;
+            viewer.src = thumbnail.originalSourceURL;
             viewer.rotateImage(0);
         }
     };
@@ -416,7 +417,7 @@ function openImageViewer(thumbnail)
         if (ind >= 0 && images.children[ind] != thumbnail) {
             // Update to new src
             thumbnail = images.children[ind];
-            viewer.src = thumbnail.src;
+            viewer.src = thumbnail.originalSourceURL;
             viewer.rotateImage(0);
         } else {
             viewer.remove();
