@@ -119,9 +119,12 @@ window.onload = () => {
         'click',
         (e) => {
             e.stopPropagation();
-            const name = document.getElementById('playlist_buttons_name').value;
+            const nameElement = document.getElementById('playlist_buttons_name');
+            const name = nameElement.value;
+            nameElement.classList.remove('animate');
             if (name.length <= 0) {
                 console.error('Any playlist name are NOT specified');
+                setTimeout(() => { nameElement.classList.add('animate'); }, 100);
                 return;
             }
             const playlist = {
