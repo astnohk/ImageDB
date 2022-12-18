@@ -18,6 +18,33 @@
     right: 4px;
     bottom: 4px;
 }
+.clear_background {
+    position: fixed;
+    top: 0px;
+    bottom: 0;
+    left: 0px;
+    right: 0px;
+    background-color: rgba(0,0,0, 0.0);
+}
+.contextmenu {
+    position: absolute;
+    display: inline-block;
+    top: 0px;
+    left: 0px;
+    min-width: 100px;
+    color: black;
+    background-color: rgb(240,240,240);
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    box-sizing: border-box;
+}
+.contextmenu_item {
+    position: relative;
+    font-size: 14px;
+    color: black;
+    cursor: pointer;
+}
 
 #category_menu_mode {
     position: absolute;
@@ -81,10 +108,10 @@
     display: inline-block;
     position: absolute;
     top: 0px;
-    left: 180px;
+    left: 182px;
     right: 0px;
     bottom: 0px;
-    overflow-y: scroll;
+    overflow: visible;
 }
 #playlist_buttons {
     position: absolute;
@@ -92,6 +119,7 @@
     left: 0px;
     right: 0px;
     height: 24px;
+    overflow: visible;
 }
 #playlist_buttons_name {
     display: inline-block;
@@ -117,11 +145,11 @@
     background-color: rgba(0,0,0, 0.98);
     outline-style: solid;
     outline-width: 2px;
-    outline-color: rgba(192,192,255, 0.98);
+    outline-color: rgb(128,128,255);
     cursor: pointer;
 }
-#playlist_buttons_save.animate {
-    animation-name: buttons_bubbling;
+.animate#playlist_buttons_save {
+    animation-name: blink_background;
     animation-duration: 0.5s;
     animation-timing-function: linear;
     animation-delay: 0s;
@@ -130,21 +158,26 @@
     animation-fill-mode: forwards;
     animation-play-state: running;
 }
-@keyframes buttons_bubbling {
+@keyframes blink_background {
     0% {
         outline-offset: 0px;
+        background-color: rgba(0,0,0, 0.98);
     }
     25% {
-        outline-offset: 5px;
+        outline-offset: 2px;
+        background-color: rgba(192,192,128, 0.98);
     }
     50% {
         outline-offset: 0px;
+        background-color: rgba(0,0,0, 0.98);
     }
     75% {
-        outline-offset: 5px;
+        outline-offset: 2px;
+        background-color: rgba(192,192,128, 0.98);
     }
     100% {
         outline-offset: 0px;
+        background-color: rgba(0,0,0, 0.98);
     }
 }
 #images {

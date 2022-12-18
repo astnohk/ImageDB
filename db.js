@@ -456,6 +456,22 @@ export function savePlaylistImageList(dbname, playlist)
     });
 }
 
+export function deletePlaylist(dbname, playlist)
+{
+    return new Promise((resolve, reject) => {
+        try {
+            const db = new Database(dbname);
+            const name = decodeURIComponent(playlist);
+            // Delete playlist
+            db.prepare(`DELETE FROM ${table_name_playlists} WHERE playlist = ?`).run(name);
+            db.prepare(`DELETE FROM ${table_name_playlist_images} WHERE playlist = ?`).run(name);
+            resolve({ success: true });
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
 export function getThumbnailImage(dbname, filepath)
 {
     return new Promise((resolve, reject) => {

@@ -7,6 +7,7 @@ var g_current_viewer = null;
 var g_dragging = null;
 var g_mousedown_time = new Date();
 
+const g_playlist_elements = {};
 
 window.onload = () => {
     const category_displayName = {};
@@ -15,7 +16,6 @@ window.onload = () => {
     const playlist_displayName = {};
     const category_elements = {};
     const directory_elements = {};
-    const playlist_elements = {};
     fetch(`${url.origin}/getCategoryList`)
         .then(res => res.json()) // { category:, displayName: category_displayName }
         .then(list => {
@@ -76,8 +76,11 @@ window.onload = () => {
         .then(res => res.json()) // { playlist: }
         .then(list => {
             list.forEach(row => {
-                playlist_elements[row.playlist] =
+                g_playlist_elements[row.playlist] =
                     createCategoryElement(row, row.playlist, playlistNameClickFunction(row.playlist));
+                g_playlist_elements[row.playlist].addEventListener(
+                    'contextmenu',
+                    playlistNameClickFunction(row.playlist));
             });
             // Do NOT append to WebGUI yet.
         })
@@ -106,7 +109,7 @@ window.onload = () => {
                 for (let i = categories.childElementCount - 1; i >= 0; --i) {
                     categories.removeChild(categories.children[i]);
                 }
-                setCategoryInCategories(playlist_elements);
+                setCategoryInCategories(g_playlist_elements);
             }
         });
     document.getElementById('playlist_buttons_save').addEventListener(
@@ -135,13 +138,15 @@ window.onload = () => {
                     method: 'POST',
                     body: JSON.stringify(playlist),
                 })
-                .then(response => {
-                    const result = JSON.stringify(response);
-                    if (result.success) {
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
                         const button = document.getElementById('playlist_buttons_save');
                         // Set animation
                         button.classList.remove('animate');
-                        button.classList.add('animate');
+                        setTimeout(
+                            () => button.classList.add('animate'),
+                            100);
                     } else {
                         console.error('Failed to save playlist.');
                     }
@@ -203,6 +208,7 @@ function createCategoryElement(data, displayName, nameClickFunction)
 {
     const category_element = document.createElement('div');
     category_element.className = 'category';
+    category_element.displayName = displayName;
     category_element.opening = false;
     // Title
     const title = document.createElement('div');
@@ -267,14 +273,88 @@ function playlistNameClickFunction(playlist)
     return (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const wrapper = document.getElementById('playlist_images_wrapper');
-        wrapper.style.display = 'inline-block';
-        const button = document.getElementById('playlist_buttons_name');
-        if (button.value.length <= 0) {
-            button.value = playlist;
+        if (e.button === 0) { // Left Button
+            const wrapper = document.getElementById('playlist_images_wrapper');
+            wrapper.style.display = 'inline-block';
+            const button = document.getElementById('playlist_buttons_name');
+            if (button.value.length <= 0) {
+                button.value = playlist;
+            }
+            getImagesInPlaylist(playlist);
+        } else if (e.button === 2) { // Right button
+            console.log('open contextmenu');
+            openContextmenu(
+                e,
+                [
+                    { name: 'delete', func: () => deletePlaylist(playlist) },
+                ]);
         }
-        getImagesInPlaylist(playlist);
     };
+}
+
+function deletePlaylist(playlist)
+{
+    // Delete playlist element from list
+    for (let key of Object.keys(g_playlist_elements)) {
+        if (g_playlist_elements[key].displayName === playlist) {
+            g_playlist_elements[key].remove();
+            delete g_playlist_elements[key];
+        }
+    }
+    // Send delete playlist command
+    fetch(`/deletePlaylist?playlist=${encodeURIComponent(playlist)}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(res => {
+            if (!res.success) {
+                console.error(`Failed to delete playlist ${playlist}.`);
+            }
+        })
+        .catch(err => console.error(err));
+}
+
+function openContextmenu(ev, items)
+{
+    const element = ev.currentTarget;
+    const bg = document.createElement('div');
+    bg.className = 'clear_background';
+    document.body.appendChild(bg);
+
+    const menu = document.createElement('div');
+    menu.className = 'contextmenu';
+    menu.style.top = `${ev.clientY}px`;
+    menu.style.left = `${ev.clientX}px`;
+    bg.appendChild(menu);
+
+    for (let item of items) {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'contextmenu_item';
+        itemElement.innerText = item.name;
+        itemElement.addEventListener(
+            'click',
+            (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                // Close BG and contextmenu
+                bg.remove();
+                // Call function
+                item.func();
+            });
+        menu.appendChild(itemElement);
+    }
+
+    bg.addEventListener(
+        'click',
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            bg.remove();
+        });
+    bg.addEventListener(
+        'contextmenu',
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
 }
 
 function createCategoryTitleButton()

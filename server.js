@@ -161,15 +161,34 @@ server.on('request', (request, response) => {
                         dbname,
                         JSON.parse(postdata)
                     )
-                    .then(values => {
+                    .then(result => {
                         response.writeHead(200, { "Content-Type": "application/json" });
-                        const body = JSON.stringify(values);
+                        const body = JSON.stringify(result);
                         response.end(body);
                     })
                     .catch(err => {
                         console.error(err);
-                        response.writeHead(500, { "Content-Type": "text/plain" });
-                        response.end('500 Interval Server Error');
+                        response.writeHead(500, { "Content-Type": "application/json" });
+                        response.end(JSON.stringify(
+                            { success: false, message: '500 Interval Server Error' }
+                        ));
+                    });
+            } else if (url.pathname === '/deletePlaylist') {
+                database.deletePlaylist(
+                        dbname,
+                        url.searchParams.get('playlist')
+                    )
+                    .then(result => {
+                        response.writeHead(200, { "Content-Type": "application/json" });
+                        const body = JSON.stringify(result);
+                        response.end(body);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        response.writeHead(500, { "Content-Type": "application/json" });
+                        response.end(JSON.stringify(
+                            { success: false, message: '500 Interval Server Error' }
+                        ));
                     });
             } else if (url.pathname === '/') {
                 fsPromises.readFile('html/index.html', { encoding: 'utf-8' })
