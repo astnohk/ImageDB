@@ -269,7 +269,10 @@ function playlistNameClickFunction(playlist)
         e.stopPropagation();
         const wrapper = document.getElementById('playlist_images_wrapper');
         wrapper.style.display = 'inline-block';
-        document.getElementById('playlist_buttons_name').value = playlist;
+        const button = document.getElementById('playlist_buttons_name');
+        if (button.value.length <= 0) {
+            button.value = playlist;
+        }
         getImagesInPlaylist(playlist);
     };
 }
