@@ -11,6 +11,14 @@
     font-size: 20px;
     color: rgb(192, 224, 255);
 }
+#vertical_split_button {
+    position: absolute;
+    top: 0px;
+    left: 200px;
+    width: 20px;
+    height: 20px;
+}
+
 #mainview {
     position: absolute;
     top: 24px;
@@ -104,11 +112,29 @@
     cursor: pointer;
 }
 
-#playlist_images_wrapper {
+#images_wrapper {
     display: inline-block;
     position: absolute;
     top: 0px;
     left: 182px;
+    right: 0px;
+    bottom: 0px;
+    overflow: visible;
+}
+#tmp_images {
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 50%;
+    bottom: 0px;
+    overflow-y: scroll;
+}
+#playlist_images_wrapper {
+    display: inline-block;
+    position: absolute;
+    top: 0px;
+    left: 0px;
     right: 0px;
     bottom: 0px;
     overflow: visible;
@@ -189,15 +215,6 @@
     bottom: 0px;
     overflow-y: scroll;
 }
-#playlist_images {
-    display: none;
-    position: absolute;
-    top: 30px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
-    overflow-y: scroll;
-}
 .thumbnails {
     width: 100px;
     height: 100px;
@@ -242,17 +259,20 @@ Image DB
     </select>
     <span id="categories">
     </span>
-    <!-- images area -->
-    <span id="playlist_images_wrapper">
-        <span id="playlist_buttons">
-            Playlist:
-            <input type="text" id="playlist_buttons_name">
-            <span id="playlist_buttons_save">save</span>
+    <span id="images_wrapper">
+        <!-- images area -->
+        <span id="tmp_images"></span>
+        <span id="playlist_images_wrapper">
+            <span id="playlist_buttons">
+                Playlist:
+                <input type="text" id="playlist_buttons_name">
+                <span id="playlist_buttons_save">save</span>
+            </span>
+            <span id="images"></span>
         </span>
-        <span id="images"></span>
-        <span id="playlist_images"></span>
+        <!-- /images area -->
     </span>
-    <!-- /images area -->
 </div>
+<canvas id="vertical_split_button">
 </body>
 </html>

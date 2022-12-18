@@ -6,10 +6,13 @@ const click_max_interval = 300; // [msec]
 var g_current_viewer = null;
 var g_dragging = null;
 var g_mousedown_time = new Date();
+var g_vertical_split = false;
 
 const g_playlist_elements = {};
 
 window.onload = () => {
+    initVerticalSplitButton();
+
     const category_displayName = {};
     const subcategory_displayName = {};
     const directory_displayName = {};
@@ -203,6 +206,39 @@ window.onload = () => {
             }
         });
 }
+
+function initVerticalSplitButton()
+{
+    const canvas = document.getElementById('vertical_split_button');
+    const w = 20;
+    const h = 20;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = 'rgb(0,0,0)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, 6, 18);
+    ctx.strokeRect(12, 1, 6, 18);
+
+    canvas.addEventListener(
+        'click',
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            g_vertical_split = !g_vertical_split;
+            if (g_vertical_split) {
+                document.getElementById('tmp_images').style.display = 'inline-block';
+                const images = document.getElementById('playlist_images_wrapper');
+                images.style.left = '50%';
+            } else {
+                document.getElementById('tmp_images').style.display = 'none';
+                const images = document.getElementById('playlist_images_wrapper');
+                images.style.left = '0px';
+            }
+        });
+}
+
 
 function createCategoryElement(data, displayName, nameClickFunction)
 {
@@ -437,8 +473,13 @@ function getImagesInCategory(category, subcategories)
         .then(res => res.json())
         .then(list => {
             list.forEach(item => {
-                document.getElementById('images').appendChild(
-                    createImageThumbnail(item.filepath, category, subcategories));
+                if (g_vertical_split) {
+                    document.getElementById('tmp_images').appendChild(
+                        createImageThumbnail_temporal(item.filepath, category, subcategories));
+                } else {
+                    document.getElementById('images').appendChild(
+                        createImageThumbnail(item.filepath, category, subcategories));
+                }
             });
         });
 }
@@ -453,8 +494,13 @@ function getImagesInDirectory(directory, category, subcategories)
         .then(res => res.json())
         .then(list => {
             list.forEach(item => {
-                document.getElementById('images').appendChild(
-                    createImageThumbnail(item.filepath, category, subcategories));
+                if (g_vertical_split) {
+                    document.getElementById('tmp_images').appendChild(
+                        createImageThumbnail_temporal(item.filepath, category, subcategories));
+                } else {
+                    document.getElementById('images').appendChild(
+                        createImageThumbnail(item.filepath, category, subcategories));
+                }
             });
         });
 }
@@ -465,20 +511,69 @@ function getImagesInPlaylist(playlist)
         .then(res => res.json())
         .then(list => {
             list.forEach(item => {
-                document.getElementById('images').appendChild(
-                    createImageThumbnail(item.filepath, '', ''));
+                if (g_vertical_split) {
+                    document.getElementById('tmp_images').appendChild(
+                        createImageThumbnail_temporal(item.filepath, '', ''));
+                } else {
+                    document.getElementById('images').appendChild(
+                        createImageThumbnail(item.filepath, '', ''));
+                }
             });
         });
 }
 
+function createImageThumbnail_temporal(filepath, category, subcategories)
+{
+    const thumbnail = createImageThumbnailElement(filepath)
+    thumbnail.addEventListener(
+        'click',
+        (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            document.getElementById('images').appendChild(
+                createImageThumbnail(filepath, category, subcategories));
+        });
+    thumbnail.info = null;
+    thumbnail.addEventListener(
+        'mouseover',
+        (e) => {
+            if (!!thumbnail.info) {
+                return;
+            }
+            thumbnail.info = document.createElement('div');
+            thumbnail.info.className = 'image_info';
+            const rect = thumbnail.getBoundingClientRect();
+            thumbnail.info.style.top = `${rect.bottom - 40}px`;
+            thumbnail.info.style.left = `${rect.right - 90}px`;
+            let text = `category: ${category}\n`;
+            for (let subcategory of subcategories) {
+                text += `subcategory: ${subcategory}\n`;
+            }
+            text += `filepath: ${filepath}`;
+            thumbnail.info.innerText = text;
+            setTimeout(
+                () => {
+                    if (!!thumbnail.info) {
+                        document.body.appendChild(thumbnail.info);
+                    }
+                },
+                500);
+        });
+    thumbnail.addEventListener(
+        'mouseout',
+        (e) => {
+            if (!!thumbnail.info) {
+                thumbnail.info.remove();
+            }
+            thumbnail.info = null;
+        });
+
+    return thumbnail;
+}
+
 function createImageThumbnail(filepath, category, subcategories)
 {
-    const thumbnail = document.createElement('img');
-    thumbnail.className = 'thumbnails';
-    thumbnail.imageRotation = 0;
-    thumbnail.src = `/getThumbnailImage?filepath=${encodeURIComponent(filepath)}`;
-    thumbnail.originalSourceURL = `/getImage?filepath=${encodeURIComponent(filepath)}`;
-    thumbnail.originalFilePath = filepath;
+    const thumbnail = createImageThumbnailElement(filepath)
     thumbnail.addEventListener(
         'mousedown',
         (e) => {
@@ -532,6 +627,18 @@ function createImageThumbnail(filepath, category, subcategories)
             }
             thumbnail.info = null;
         });
+
+    return thumbnail;
+}
+
+function createImageThumbnailElement(filepath)
+{
+    const thumbnail = document.createElement('img');
+    thumbnail.className = 'thumbnails';
+    thumbnail.imageRotation = 0;
+    thumbnail.src = `/getThumbnailImage?filepath=${encodeURIComponent(filepath)}`;
+    thumbnail.originalSourceURL = `/getImage?filepath=${encodeURIComponent(filepath)}`;
+    thumbnail.originalFilePath = filepath;
 
     return thumbnail;
 }
