@@ -7,7 +7,7 @@ import sharp from 'sharp';
 import * as database from './db.js';
 import * as utils from './utils.js';
 
-const thumbnail_size = 200;
+const thumbnail_size = 100;
 const dbname = 'main.db';
 
 
