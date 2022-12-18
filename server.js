@@ -18,8 +18,9 @@ const server = https.createServer({
 server.on('request', (request, response) => {
     const url = new URL(`https://localhost${request.url}`);
     console.log(request.url);
+    let postdata = '';
     request.on('data', (chunk) => {
-        console.log(`BODY: ${chunk}`);
+        postdata = postdata.concat(chunk);
     });
     request.on('end', () => {
         try {
@@ -71,8 +72,8 @@ server.on('request', (request, response) => {
                         response.writeHead(500, { "Content-Type": "text/plain" });
                         response.end('500 Interval Server Error');
                     });
-            } else if (url.pathname === '/getImageList') {
-                database.getImageList(dbname)
+            } else if (url.pathname === '/getPlaylistList') {
+                database.getPlaylistList(dbname)
                     .then(values => {
                         response.writeHead(200, { "Content-Type": "application/json" });
                         const body = JSON.stringify(values);
@@ -107,9 +108,10 @@ server.on('request', (request, response) => {
                     });
             } else if (url.pathname === '/getCategoryImageList') {
                 database.getCategoryImageList(
-                    dbname,
-                    url.searchParams.get('category'),
-                    url.searchParams.getAll('subcategory'))
+                        dbname,
+                        url.searchParams.get('category'),
+                        url.searchParams.getAll('subcategory')
+                    )
                     .then(values => {
                         response.writeHead(200, { "Content-Type": "application/json" });
                         const body = JSON.stringify(values);
@@ -124,10 +126,11 @@ server.on('request', (request, response) => {
                 const directory = url.searchParams.get('directory');
                 const category = url.searchParams.get('category');
                 database.getDirectoryImageList(
-                    dbname,
-                    url.searchParams.get('directory'),
-                    url.searchParams.get('category'),
-                    url.searchParams.getAll('subcategory'))
+                        dbname,
+                        url.searchParams.get('directory'),
+                        url.searchParams.get('category'),
+                        url.searchParams.getAll('subcategory')
+                    )
                     .then(values => {
                         response.writeHead(200, { "Content-Type": "application/json" });
                         const body = JSON.stringify(values);
@@ -140,8 +143,24 @@ server.on('request', (request, response) => {
                     });
             } else if (url.pathname === '/getPlaylistImageList') {
                 database.getPlaylistImageList(
-                    dbname,
-                    url.searchParams.get('playlist'))
+                        dbname,
+                        url.searchParams.get('playlist')
+                    )
+                    .then(values => {
+                        response.writeHead(200, { "Content-Type": "application/json" });
+                        const body = JSON.stringify(values);
+                        response.end(body);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        response.writeHead(500, { "Content-Type": "text/plain" });
+                        response.end('500 Interval Server Error');
+                    });
+            } else if (url.pathname === '/savePlaylistImageList') {
+                database.savePlaylistImageList(
+                        dbname,
+                        JSON.parse(postdata)
+                    )
                     .then(values => {
                         response.writeHead(200, { "Content-Type": "application/json" });
                         const body = JSON.stringify(values);

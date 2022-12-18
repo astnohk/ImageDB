@@ -12,8 +12,10 @@ window.onload = () => {
     const category_displayName = {};
     const subcategory_displayName = {};
     const directory_displayName = {};
+    const playlist_displayName = {};
     const category_elements = {};
     const directory_elements = {};
+    const playlist_elements = {};
     fetch(`${url.origin}/getCategoryList`)
         .then(res => res.json()) // { category:, displayName: category_displayName }
         .then(list => {
@@ -65,7 +67,19 @@ window.onload = () => {
                 const subcategory = createDirectorySubCategoryElement(row.directory, row.category, [ row.subcategory ], subcategory_displayName[row.subcategory]);
                 directory_element.subcategories.push(subcategory);
             });
-            // Do NOT append to list yet.
+            // Do NOT append to WebGUI yet.
+        })
+        .catch(err => {
+            console.error(err);
+        })
+        .then(arg => fetch(`${url.origin}/getPlaylistList`))
+        .then(res => res.json()) // { playlist: }
+        .then(list => {
+            list.forEach(row => {
+                playlist_elements[row.playlist] =
+                    createCategoryElement(row, row.playlist, playlistNameClickFunction(row.playlist));
+            });
+            // Do NOT append to WebGUI yet.
         })
         .catch(err => {
             console.error(err);
@@ -88,7 +102,53 @@ window.onload = () => {
                     categories.removeChild(categories.children[i]);
                 }
                 setCategoryInCategories(directory_elements);
+            } else if (mode === 'Playlist') {
+                for (let i = categories.childElementCount - 1; i >= 0; --i) {
+                    categories.removeChild(categories.children[i]);
+                }
+                setCategoryInCategories(playlist_elements);
             }
+        });
+    document.getElementById('playlist_buttons_save').addEventListener(
+        'click',
+        (e) => {
+            e.stopPropagation();
+            const name = document.getElementById('playlist_buttons_name').value;
+            if (name.length <= 0) {
+                console.error('Any playlist name are NOT specified');
+                return;
+            }
+            const playlist = {
+                playlist: name,
+                images: [],
+            };
+            const images = document.getElementById('images');
+            for (let i = 0; i < images.children.length; ++i) {
+                playlist.images.push({
+                    playlist: playlist.playlist,
+                    number: i,
+                    filepath: images.children[i].originalFilePath, // thumbnail
+                });
+            }
+            fetch(`/savePlaylistImageList`,
+                {
+                    method: 'POST',
+                    body: JSON.stringify(playlist),
+                })
+                .then(response => {
+                    const result = JSON.stringify(response);
+                    if (result.success) {
+                        const button = document.getElementById('playlist_buttons_save');
+                        // Set animation
+                        button.classList.remove('animate');
+                        button.classList.add('animate');
+                    } else {
+                        console.error('Failed to save playlist.');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                });
         });
 
     window.addEventListener(
@@ -202,6 +262,18 @@ function directoryNameClickFunction(directory)
     };
 }
 
+function playlistNameClickFunction(playlist)
+{
+    return (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const wrapper = document.getElementById('playlist_images_wrapper');
+        wrapper.style.display = 'inline-block';
+        document.getElementById('playlist_buttons_name').value = playlist;
+        getImagesInPlaylist(playlist);
+    };
+}
+
 function createCategoryTitleButton()
 {
     const button = document.createElement('canvas');
@@ -304,6 +376,18 @@ function getImagesInDirectory(directory, category, subcategories)
         });
 }
 
+function getImagesInPlaylist(playlist)
+{
+    fetch(`${url.origin}/getPlaylistImageList?playlist=${encodeURIComponent(playlist)}`)
+        .then(res => res.json())
+        .then(list => {
+            list.forEach(item => {
+                document.getElementById('images').appendChild(
+                    createImageThumbnail(item.filepath, '', ''));
+            });
+        });
+}
+
 function createImageThumbnail(filepath, category, subcategories)
 {
     const thumbnail = document.createElement('img');
@@ -311,6 +395,7 @@ function createImageThumbnail(filepath, category, subcategories)
     thumbnail.imageRotation = 0;
     thumbnail.src = `/getThumbnailImage?filepath=${encodeURIComponent(filepath)}`;
     thumbnail.originalSourceURL = `/getImage?filepath=${encodeURIComponent(filepath)}`;
+    thumbnail.originalFilePath = filepath;
     thumbnail.addEventListener(
         'mousedown',
         (e) => {

@@ -209,26 +209,19 @@ export function createTablePlaylists(dbname)
     const db = new Database(dbname);
     db.prepare(`CREATE TABLE IF NOT EXISTS ${table_name_playlists} (` +
         'playlist TEXT NOT NULL,' +
-        'displayName TEXT NOT NULL,' +
         'PRIMARY KEY (playlist))')
         .run();
 }
 
-export function insertPlaylists(dbname, playlists)
+export function insertPlaylist(dbname, playlist)
 {
     const db = new Database(dbname);
     const insert = db.prepare(`INSERT OR REPLACE INTO ${table_name_playlists} (` +
-        'playlist,' +
-        'displayName' +
+        'playlist' +
         ') VALUES (' +
-        '@playlist,' +
-        '@displayName' +
+        '@playlist' +
         ')');
-    const insertMany = db.transaction((vals) => {
-        vals.forEach(val => { insert.run(val); });
-    });
-
-    insertMany(playlists);
+    insert.run(playlist);
 }
 
 export function createTablePlaylistImages(dbname)
@@ -236,8 +229,9 @@ export function createTablePlaylistImages(dbname)
     const db = new Database(dbname);
     db.prepare(`CREATE TABLE IF NOT EXISTS ${table_name_playlist_images} (` +
         'playlist TEXT NOT NULL,' +
+        'number INTEGER NOT NULL,' +
         'filepath TEXT NOT NULL,' +
-        'PRIMARY KEY (playlist, filepath))')
+        'PRIMARY KEY (playlist, number, filepath))')
         .run();
 }
 
@@ -246,9 +240,11 @@ export function insertPlaylistImages(dbname, values)
     const db = new Database(dbname);
     const insert = db.prepare(`INSERT OR IGNORE INTO ${table_name_playlist_images} (` +
         'playlist,' +
+        'number,' +
         'filepath' +
         ') VALUES (' +
         '@playlist,' +
+        '@number,' +
         '@filepath' +
         ')');
     const insertMany = db.transaction((vals) => {
@@ -319,7 +315,7 @@ export function checkImageFilepath(dbname, filepath)
     return new Promise((resolve, reject) => {
         try {
             const db = new Database(dbname);
-            const value = db.prepare(`SELECT name FROM ${table_name_images} WHERE filepath = '${decodeURIComponent(filepath)}'`).get();
+            const value = db.prepare(`SELECT name FROM ${table_name_images} WHERE filepath = ?`).get(decodeURIComponent(filepath));
             resolve(!!value);
         } catch (err) {
             reject(err);
@@ -337,7 +333,7 @@ export function getCategoryImageList(dbname, category, subcategories)
                 // Get first subcategory images
                 {
                     const subcategory = decodeURIComponent(subcategories[0]);
-                    const filepaths = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = '${decodeURIComponent(category)}' AND subcategory = '${decodeURIComponent(subcategory)}'`).all();
+                    const filepaths = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = ? AND subcategory = ?`).all(decodeURIComponent(category), decodeURIComponent(subcategory));
                     for (let row of filepaths) {
                         category_images.add(row.filepath);
                     }
@@ -345,7 +341,7 @@ export function getCategoryImageList(dbname, category, subcategories)
                 // Filter by subcategories
                 for (let i = 1; i < subcategories.length; ++i) {
                     const subcategory = decodeURIComponent(subcategories[i]);
-                    const filepaths = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = '${decodeURIComponent(category)}' AND subcategory = '${decodeURIComponent(subcategory)}'`).all();
+                    const filepaths = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = ? AND subcategory = '`).all(decodeURIComponent(category), decodeURIComponent(subcategory));
                     let intersection = new Set();
                     for (let row of filepaths) {
                         if (category_images.has(row.filepath)) {
@@ -355,7 +351,7 @@ export function getCategoryImageList(dbname, category, subcategories)
                     category_images = intersection;
                 }
             } else {
-                const filepaths = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE category = '${decodeURIComponent(category)}'`).all();
+                const filepaths = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE category = ?`).all(decodeURIComponent(category));
                 for (let row of filepaths) {
                     category_images.add(row.filepath);
                 }
@@ -381,9 +377,9 @@ export function getDirectoryImageList(dbname, directory, category, subcategories
             {
                 let filepaths = [];
                 if (!!category) {
-                    filepaths = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE directory = '${decodeURIComponent(directory)}' AND category = '${decodeURIComponent(category)}'`).all();
+                    filepaths = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE directory = ? AND category = ?`).all(decodeURIComponent(directory), decodeURIComponent(category));
                 } else {
-                    filepaths = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE directory = '${decodeURIComponent(directory)}'`).all();
+                    filepaths = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE directory = ?`).all(decodeURIComponent(directory));
                 }
                 for (let row of filepaths) {
                     directory_images.add(row.filepath);
@@ -393,7 +389,7 @@ export function getDirectoryImageList(dbname, directory, category, subcategories
                 // Filter by subcategories
                 for (let i = 0; i < subcategories.length; ++i) {
                     const subcategory = decodeURIComponent(subcategories[i]);
-                    const filepaths = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = '${decodeURIComponent(category)}' AND subcategory = '${decodeURIComponent(subcategory)}'`).all();
+                    const filepaths = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = ? AND subcategory = ?`).all(decodeURIComponent(category), decodeURIComponent(subcategory));
                     let intersection = new Set();
                     for (let row of filepaths) {
                         if (directory_images.has(row.filepath)) {
@@ -415,13 +411,45 @@ export function getDirectoryImageList(dbname, directory, category, subcategories
     });
 }
 
+export function getPlaylistList(dbname)
+{
+    return new Promise((resolve, reject) => {
+        try {
+            const db = new Database(dbname);
+            const rows = db.prepare(`SELECT playlist FROM ${table_name_playlists}`).all();
+            rows.sort();
+            resolve(rows);
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
 export function getPlaylistImageList(dbname, playlist)
 {
     return new Promise((resolve, reject) => {
         try {
             const db = new Database(dbname);
-            const images = db.prepare(`SELECT filepath FROM ${table_name_playlist_images} WHERE playlist = '${decodeURIComponent(playlist)}'`).all();
+            const images = db.prepare(`SELECT number,filepath FROM ${table_name_playlist_images} WHERE playlist = ?`).all(decodeURIComponent(playlist));
+            images.sort((a, b) => a.number - b.numer);
             resolve(images);
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+export function savePlaylistImageList(dbname, playlist)
+{
+    return new Promise((resolve, reject) => {
+        try {
+            const db = new Database(dbname);
+            // Delete old playlist
+            db.prepare(`DELETE FROM ${table_name_playlist_images} WHERE playlist = ?`).run(playlist.playlist);
+            // Add
+            insertPlaylist(dbname, playlist);
+            insertPlaylistImages(dbname, playlist.images);
+            resolve({ success: true });
         } catch (err) {
             reject(err);
         }
