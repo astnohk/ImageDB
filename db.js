@@ -328,39 +328,43 @@ export function getCategoryImageList(dbname, category, subcategories)
     return new Promise((resolve, reject) => {
         try {
             const db = new Database(dbname);
-            let category_images = new Set();
+            let category_images = {};
+            let filepath_filtered = new Set();
             if (!!subcategories && subcategories.length > 0) {
                 // Get first subcategory images
                 {
                     const subcategory = decodeURIComponent(subcategories[0]);
-                    const filepaths = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = ? AND subcategory = ?`).all(decodeURIComponent(category), decodeURIComponent(subcategory));
+                    const filepaths = db.prepare(`SELECT ${table_name_subcategory_images}.filepath,ctime,mtime FROM ${table_name_subcategory_images} INNER JOIN ${table_name_images} ON ${table_name_subcategory_images}.filepath = ${table_name_images}.filepath WHERE ${table_name_subcategory_images}.category = ? AND subcategory = ?`).all(decodeURIComponent(category), decodeURIComponent(subcategory));
                     for (let row of filepaths) {
-                        category_images.add(row.filepath);
+                        category_images[row.filepath] = row;
+                        filepath_filtered.add(row.filepath);
                     }
                 }
                 // Filter by subcategories
                 for (let i = 1; i < subcategories.length; ++i) {
                     const subcategory = decodeURIComponent(subcategories[i]);
-                    const filepaths = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = ? AND subcategory = '`).all(decodeURIComponent(category), decodeURIComponent(subcategory));
+                    const filepaths = db.prepare(`SELECT ${table_name_subcategory_images}.filepath,ctime,mtime FROM ${table_name_subcategory_images} INNER JOIN ${table_name_subcategory_images} ON ${table_name_subcategory_images}.filepath = ${table_name_images}.filepath WHERE ${table_name_subcategory_images}.category = ? AND subcategory = '`).all(decodeURIComponent(category), decodeURIComponent(subcategory));
                     let intersection = new Set();
                     for (let row of filepaths) {
-                        if (category_images.has(row.filepath)) {
+                        if (filepath_filtered.has(row.filepath)) {
                             intersection.add(row.filepath);
                         }
                     }
-                    category_images = intersection;
+                    filepath_filtered = intersection;
                 }
             } else {
-                const filepaths = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE category = ?`).all(decodeURIComponent(category));
+                const filepaths = db.prepare(`SELECT filepath,ctime,mtime FROM ${table_name_images} WHERE category = ?`).all(decodeURIComponent(category));
                 for (let row of filepaths) {
-                    category_images.add(row.filepath);
+                    category_images[row.filepath] = row;
+                    filepath_filtered.add(row.filepath);
                 }
             }
             // Get image filepath list
             let images = [];
-            for (let filepath of category_images.values()) {
-                images.push({ filepath: filepath });
+            for (let filepath of filepath_filtered.values()) {
+                images.push(category_images[filepath]);
             }
+            images.sort((a, b) => a.filepath.localeCompare(b.filepath));
             resolve(images);
         } catch (err) {
             reject(err);
@@ -373,16 +377,18 @@ export function getDirectoryImageList(dbname, directory, category, subcategories
     return new Promise((resolve, reject) => {
         try {
             const db = new Database(dbname);
-            let directory_images = new Set();
+            let directory_images = {};
+            let filepath_filtered = new Set();
             {
                 let filepaths = [];
                 if (!!category) {
-                    filepaths = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE directory = ? AND category = ?`).all(decodeURIComponent(directory), decodeURIComponent(category));
+                    filepaths = db.prepare(`SELECT filepath,ctime,mtime FROM ${table_name_images} WHERE directory = ? AND category = ?`).all(decodeURIComponent(directory), decodeURIComponent(category));
                 } else {
-                    filepaths = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE directory = ?`).all(decodeURIComponent(directory));
+                    filepaths = db.prepare(`SELECT filepath,ctime,mtime FROM ${table_name_images} WHERE directory = ?`).all(decodeURIComponent(directory));
                 }
                 for (let row of filepaths) {
-                    directory_images.add(row.filepath);
+                    directory_images[row.filepath] = row;
+                    filepath_filtered.add(row.filepath);
                 }
             }
             if (!!subcategories && subcategories.length > 0) {
@@ -392,18 +398,19 @@ export function getDirectoryImageList(dbname, directory, category, subcategories
                     const filepaths = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = ? AND subcategory = ?`).all(decodeURIComponent(category), decodeURIComponent(subcategory));
                     let intersection = new Set();
                     for (let row of filepaths) {
-                        if (directory_images.has(row.filepath)) {
+                        if (filepath_filtered.has(row.filepath)) {
                             intersection.add(row.filepath);
                         }
                     }
-                    directory_images = intersection;
+                    filepath_filtered = intersection;
                 }
             }
             // Get image filepath list
             let images = [];
-            for (let filepath of directory_images.values()) {
-                images.push({ filepath: filepath });
+            for (let filepath of filepath_filtered.values()) {
+                images.push(directory_images[filepath]);
             }
+            images.sort((a, b) => a.filepath.localeCompare(b.filepath));
             resolve(images);
         } catch (err) {
             reject(err);
@@ -430,8 +437,8 @@ export function getPlaylistImageList(dbname, playlist)
     return new Promise((resolve, reject) => {
         try {
             const db = new Database(dbname);
-            const images = db.prepare(`SELECT number,filepath FROM ${table_name_playlist_images} WHERE playlist = ?`).all(decodeURIComponent(playlist));
-            images.sort((a, b) => a.number - b.numer);
+            const images = db.prepare(`SELECT number,${table_name_playlist_images}.filepath,ctime,mtime FROM ${table_name_playlist_images} INNER JOIN ${table_name_images} ON ${table_name_playlist_images}.filepath = ${table_name_images}.filepath WHERE playlist = ?`).all(decodeURIComponent(playlist));
+            images.sort((a, b) => a.number - b.number);
             resolve(images);
         } catch (err) {
             reject(err);
