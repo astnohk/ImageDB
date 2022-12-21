@@ -169,17 +169,38 @@ window.onload = () => {
             let key_processed = false;
             if (!!g_current_viewer) {
                 if (e.key === 'ArrowLeft') {
-                    key_processed = true;
-                    g_current_viewer.changeImage('prev');
+                    if (!!g_current_viewer) {
+                        key_processed = true;
+                        g_current_viewer.changeImage('prev');
+                    }
                 } else if (e.key === 'ArrowRight') {
-                    key_processed = true;
-                    g_current_viewer.changeImage('next');
+                    if (!!g_current_viewer) {
+                        key_processed = true;
+                        g_current_viewer.changeImage('next');
+                    }
                 } else if (e.key === 'Delete') {
-                    key_processed = true;
-                    g_current_viewer.removeImage();
+                    if (!!g_current_viewer) {
+                        key_processed = true;
+                        g_current_viewer.removeImage();
+                    }
+                } else if (e.key === 'p') { // Play slideshow
+                    if (!!g_current_viewer) {
+                        key_processed = true;
+                        const slideshow = () => {
+                            if (!!g_current_viewer) {
+                                g_current_viewer.changeImage('next');
+                                setTimeout(
+                                    slideshow,
+                                    5000);
+                            }
+                        };
+                        slideshow();
+                    }
                 } else if (e.key === 'r') {
-                    key_processed = true;
-                    g_current_viewer.rotateImage(1);
+                    if (!!g_current_viewer) {
+                        key_processed = true;
+                        g_current_viewer.rotateImage(1);
+                    }
                 }
             }
             if (key_processed) {
@@ -732,7 +753,10 @@ function openImageViewer(thumbnail)
         }
     };
     // Event Listeners
-    viewer.addEventListener('click', (e) => { viewer.remove(); });
+    viewer.addEventListener('click', (e) => {
+        g_current_viewer = null;
+        viewer.remove();
+    });
     viewer.addEventListener('wheel', (e) => {
         e.preventDefault();
         e.stopPropagation();
