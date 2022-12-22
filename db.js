@@ -364,7 +364,7 @@ export function getCategoryImageList(dbname, category, subcategories)
             for (let filepath of filepath_filtered.values()) {
                 images.push(category_images[filepath]);
             }
-            images.sort((a, b) => a.filepath.localeCompare(b.filepath));
+            images.sort();
             resolve(images);
         } catch (err) {
             reject(err);
@@ -410,7 +410,7 @@ export function getDirectoryImageList(dbname, directory, category, subcategories
             for (let filepath of filepath_filtered.values()) {
                 images.push(directory_images[filepath]);
             }
-            images.sort((a, b) => a.filepath.localeCompare(b.filepath));
+            images.sort();
             resolve(images);
         } catch (err) {
             reject(err);
