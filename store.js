@@ -160,53 +160,59 @@ async function main()
         console.error('You need to specify root dir.');
         return;
     }
-    console.log(`Read '${process.argv[2]}'...`);
-    let rootDir = process.argv[2];
-    let rootDirMatch = rootDir.match(/([a-z]:)(.+)/);
-    if (rootDirMatch && rootDirMatch.index == 0) {
-        rootDir = `${rootDirMatch[1].toUpperCase()}${rootDirMatch[2]}`;
-    }
-    console.log('Read image files...');
-    const images = await searchDirs(rootDir);
-    console.log('done.');
-    console.log('Parse results...');
-    let directories = [];
-    for (let dir of images.directories.values()) {
-        directories.push({ directory: dir, displayName: path.basename(dir) });
-    }
-    let categories = [];
-    for (let cat of images.categories.values()) {
-        categories.push({ category: cat, displayName: cat });
-    }
-    let subcategories = [];
-    for (let cat of images.subcategories.values()) {
-        subcategories.push({ category: cat.category, subcategory: cat.subcategory, displayName: cat.subcategory });
-    }
-    let directorySubcategories = [];
-    for (let cat of images.directorySubcategories.values()) {
-        directorySubcategories.push({ directory: cat.directory, category: cat.category, subcategory: cat.subcategory });
-    }
-    console.log('done.');
-
-    console.log('Create thumbnail images...');
-    try {
-        for (let i = 0; i < images.images.length; ++i) {
-            const image = await images.images[i].image;
-            images.images[i].image = image;
+    if (process.argv[2] === '--clean') {
+        // Check all filepath and cleanup broken links
+        database.checkImageExistence(dbname);
+    } else {
+        // Search specified directory and store image paths
+        console.log(`Read '${process.argv[2]}'...`);
+        let rootDir = process.argv[2];
+        let rootDirMatch = rootDir.match(/([a-z]:)(.+)/);
+        if (rootDirMatch && rootDirMatch.index == 0) {
+            rootDir = `${rootDirMatch[1].toUpperCase()}${rootDirMatch[2]}`;
         }
-    } catch (err) {
-        console.error(err);
-        return;
-    }
-    console.log('done.');
+        console.log('Read image files...');
+        const images = await searchDirs(rootDir);
+        console.log('done.');
+        console.log('Parse results...');
+        let directories = [];
+        for (let dir of images.directories.values()) {
+            directories.push({ directory: dir, displayName: path.basename(dir) });
+        }
+        let categories = [];
+        for (let cat of images.categories.values()) {
+            categories.push({ category: cat, displayName: cat });
+        }
+        let subcategories = [];
+        for (let cat of images.subcategories.values()) {
+            subcategories.push({ category: cat.category, subcategory: cat.subcategory, displayName: cat.subcategory });
+        }
+        let directorySubcategories = [];
+        for (let cat of images.directorySubcategories.values()) {
+            directorySubcategories.push({ directory: cat.directory, category: cat.category, subcategory: cat.subcategory });
+        }
+        console.log('done.');
 
-    console.log(`Insert data to DB (${dbname})`);
-    database.insertImages(dbname, images.images);
-    database.insertDirectories(dbname, directories);
-    database.insertCategories(dbname, categories);
-    database.insertSubCategories(dbname, subcategories);
-    database.insertDirectorySubCategories(dbname, directorySubcategories);
-    database.insertSubCategoryImages(dbname, images.subcategoryImages);
+        console.log('Create thumbnail images...');
+        try {
+            for (let i = 0; i < images.images.length; ++i) {
+                const image = await images.images[i].image;
+                images.images[i].image = image;
+            }
+        } catch (err) {
+            console.error(err);
+            return;
+        }
+        console.log('done.');
+
+        console.log(`Insert data to DB (${dbname})`);
+        database.insertImages(dbname, images.images);
+        database.insertDirectories(dbname, directories);
+        database.insertCategories(dbname, categories);
+        database.insertSubCategories(dbname, subcategories);
+        database.insertDirectorySubCategories(dbname, directorySubcategories);
+        database.insertSubCategoryImages(dbname, images.subcategoryImages);
+    }
 }
 
 // Call main

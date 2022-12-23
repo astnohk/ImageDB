@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import Database from 'better-sqlite3';
 
 export const table_name_directories = 'directories';
@@ -490,5 +491,61 @@ export function getThumbnailImage(dbname, filepath)
             reject(err);
         }
     });
+}
+
+
+
+////////////////////////////////
+// DELETE
+////////////////////////////////
+export function deleteImage(dbname, filepath)
+{
+    const db = new Database(dbname);
+    // Get directory, category, subcategory of target
+    const info = db.prepare(`SELECT category,directory FROM ${table_name_images} WHERE filepath = ?`).get(filepath);
+    const subcategories = db.prepare(`SELECT category,subcategory FROM ${table_name_subcategory_images} WHERE filepath = ?`).all(filepath);
+    // Delete
+    db.prepare(`DELETE FROM ${table_name_images} WHERE filepath = ?`).run(filepath);
+    db.prepare(`DELETE FROM ${table_name_subcategory_images} WHERE filepath = ?`).run(filepath);
+    db.prepare(`DELETE FROM ${table_name_playlist_images} WHERE filepath = ?`).run(filepath);
+    // Search empty category, drectory and subcategory
+    //// category
+    const category_image = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE category = ?`).get(info.category);
+    if (category_image.length == 0) {
+        db.prepare(`DELETE FROM ${table_name_directories} WHERE category = ?`).run(info.category);
+        db.prepare(`DELETE FROM ${table_name_categories} WHERE category = ?`).run(info.category);
+        db.prepare(`DELETE FROM ${table_name_subcategories} WHERE category = ?`).run(info.category);
+    }
+    //// directory
+    const directory_image = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE directory = ?`).get(info.directory);
+    if (directory_image.length == 0) {
+        db.prepare(`DELETE FROM ${table_name_directories} WHERE directory = ?`).run(info.directory);
+        db.prepare(`DELETE FROM ${table_name_directory_subcategories} WHERE directory = ?`).run(info.directory);
+    }
+    //// subcategory
+    for (let subcategory of subcategories) {
+        const subcategory_image = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = ? AND subcategory = ?`).get(subcategory.category, subcategory.subcategory);
+        if (subcategory_image.length == 0) {
+            db.prepare(`DELETE FROM ${table_name_subcategories} WHERE category = ? AND subcategory = ?`).run(subcategory.category, subcategory.subcategory);
+            db.prepare(`DELETE FROM ${table_name_directory_subcategories} WHERE category = ? AND subcategory = ?`).run(subcategory.category, subcategory.subcategory);
+        }
+    }
+}
+
+export function checkImageExistence(dbname)
+{
+    const db = new Database(dbname);
+    const directories = db.prepare(`SELECT directory FROM ${table_name_directories}`).all();
+    for (let directory of directories) {
+        const filepaths = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE directory = ?`).all(directory.directory);
+        for (let val of filepaths) {
+            const filepath = val.filepath;
+            if (!fs.existsSync(filepath)) {
+                console.log(`Can't find "${filepath}"`);
+                // Not found
+                deleteImage(dbname, filepath);
+            }
+        }
+    }
 }
 
