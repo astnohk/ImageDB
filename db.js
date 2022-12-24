@@ -511,14 +511,14 @@ export function deleteImage(dbname, filepath)
     db.prepare(`DELETE FROM ${table_name_playlist_images} WHERE filepath = ?`).run(filepath);
     // Search empty category, drectory and subcategory
     //// category
-    const category_image = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE category = ?`).get(info.category);
+    const category_image = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE category = ?`).all(info.category);
     if (category_image.length == 0) {
         db.prepare(`DELETE FROM ${table_name_directories} WHERE category = ?`).run(info.category);
         db.prepare(`DELETE FROM ${table_name_categories} WHERE category = ?`).run(info.category);
         db.prepare(`DELETE FROM ${table_name_subcategories} WHERE category = ?`).run(info.category);
     }
     //// directory
-    const directory_image = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE directory = ?`).get(info.directory);
+    const directory_image = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE directory = ?`).all(info.directory);
     if (directory_image.length == 0) {
         db.prepare(`DELETE FROM ${table_name_directories} WHERE directory = ?`).run(info.directory);
         db.prepare(`DELETE FROM ${table_name_directory_subcategories} WHERE directory = ?`).run(info.directory);
