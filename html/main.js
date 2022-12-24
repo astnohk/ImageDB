@@ -471,7 +471,8 @@ function createDirectorySubCategoryElement(directory, category, subcategories, d
 function setCategoryInCategories(category_elements)
 {
     let category_elements_keys = Object.keys(category_elements);
-    category_elements_keys.sort();
+    category_elements_keys.sort((a, b) =>
+        category_elements[a].displayName.localeCompare(category_elements[b].displayName));
     for (let category of category_elements_keys) {
         const category_element = category_elements[category];
         category_element.subcategories.sort((a, b) => {

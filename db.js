@@ -291,6 +291,7 @@ export function getCategoryList(dbname)
         try {
             const db = new Database(dbname);
             const values = db.prepare(`SELECT category,displayName FROM ${table_name_categories}`).all();
+            values.sort((a, b) => a.displayName.localeCompare(b.displayName));
             resolve(values);
         } catch (err) {
             reject(err);
