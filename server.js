@@ -7,8 +7,16 @@ import process from 'node:process';
 import * as database from './db.js';
 import * as utils from './utils.js';
 
+let http_port = 8443;
 
 const dbname = 'main.db';
+
+if (process.argv.length >= 4) {
+    if (process.argv[2] === '--port') {
+        http_port = parseInt(process.argv[3], 10);
+    }
+}
+
 
 
 const server = https.createServer({
@@ -261,5 +269,5 @@ function loadImage(filepath)
 
 
 // Start HTTPS server
-server.listen('8443');
+server.listen(http_port);
 
