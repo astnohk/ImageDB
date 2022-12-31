@@ -65,10 +65,13 @@ window.onload = () => {
                         category_element = category_elements[row.category];
                     } else {
                         category_element = createCategoryElement(row, category_displayName[row.category], categoryNameClickFunction(row.category));
+                        category_element.subcategories = {};
                         category_elements[row.category] = category_element;
                     }
-                    const subcategory = createSubCategoryElement(row);
-                    category_element.subcategories.push(subcategory);
+                    if (!category_element.subcategories[row.subcategory]) {
+                        const subcategory = createSubCategoryElement(row);
+                        category_element.subcategories[row.subcategory] = subcategory;
+                    }
                 });
                 // Do NOT append to WebGUI yet.
             })
@@ -91,10 +94,13 @@ window.onload = () => {
                         directory_element = directory_elements[row.directory];
                     } else {
                         directory_element = createCategoryElement(row, directory_displayName[row.directory], directoryNameClickFunction(row.directory));
+                        directory_element.subcategories = {};
                         directory_elements[row.directory] = directory_element;
                     }
-                    const subcategory = createDirectorySubCategoryElement(row.directory, row.category, [ row.subcategory ], subcategory_displayName[row.subcategory]);
-                    directory_element.subcategories.push(subcategory);
+                    if (!directory_element.subcategories[row.subcategory]) {
+                        const subcategory = createDirectorySubCategoryElement(row.directory, row.category, [ row.subcategory ], subcategory_displayName[row.subcategory]);
+                        directory_element.subcategories[row.subcategory] = subcategory;
+                    }
                 });
                 // Do NOT append to WebGUI yet.
             })
@@ -105,11 +111,13 @@ window.onload = () => {
             .then(res => res.json()) // { playlist: }
             .then(list => {
                 list.forEach(row => {
-                    g_playlist_elements[row.playlist] =
-                        createCategoryElement(row, row.playlist, playlistNameClickFunction(row.playlist));
-                    g_playlist_elements[row.playlist].addEventListener(
-                        'contextmenu',
-                        playlistNameClickFunction(row.playlist));
+                    if (!g_playlist_elements[row.playlist]) {
+                        g_playlist_elements[row.playlist] =
+                            createCategoryElement(row, row.playlist, playlistNameClickFunction(row.playlist));
+                        g_playlist_elements[row.playlist].addEventListener(
+                            'contextmenu',
+                            playlistNameClickFunction(row.playlist));
+                    }
                 });
                 // Do NOT append to WebGUI yet.
             })
@@ -120,7 +128,7 @@ window.onload = () => {
                 // Append to web page
                 category_menu_mode.dispatchEvent(new Event('change'));
                 // Update interval
-                setInterval(getMenuList, 10 * 1000);
+                setTimeout(getMenuList, 30 * 1000);
             });
     };
     getMenuList();
@@ -485,11 +493,12 @@ function setCategoryInCategories(category_elements)
         category_elements[a].displayName.localeCompare(category_elements[b].displayName));
     for (let category of category_elements_keys) {
         const category_element = category_elements[category];
-        category_element.subcategories.sort((a, b) => {
-                return a.displayName.localeCompare(b.displayName);
-                });
-        for (let subcategory of category_element.subcategories) {
-            category_element.appendChild(subcategory);
+        const subcategoryKeys = Object.keys(category_element.subcategories);
+        subcategoryKeys.sort((a, b) => {
+                return category_element.subcategories[a].displayName.localeCompare(category_element.subcategories[b].displayName);
+            });
+        for (let key of subcategoryKeys) {
+            category_element.appendChild(category_element.subcategories[key]);
         }
         // Append category list to page
         document.getElementById('categories').appendChild(category_element);
