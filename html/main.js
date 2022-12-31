@@ -19,77 +19,6 @@ window.onload = () => {
     const playlist_displayName = {};
     const category_elements = {};
     const directory_elements = {};
-    fetch(`${url.origin}/getCategoryList`)
-        .then(res => res.json()) // { category:, displayName: category_displayName }
-        .then(list => {
-            list.forEach(row => {
-                category_displayName[row.category] = row.displayName;
-            });
-        })
-        .then(res => fetch(`${url.origin}/getSubCategoryList`))
-        .then(res => res.json()) // { category:, subcategory:, displayName: subcategory_displayName }
-        .then(list => {
-            list.forEach(row => {
-                subcategory_displayName[row.subcategory] = row.displayName;
-            });
-            list.forEach(row => {
-                let category_element = null;
-                if (!!category_elements[row.category]) {
-                    category_element = category_elements[row.category];
-                } else {
-                    category_element = createCategoryElement(row, category_displayName[row.category], categoryNameClickFunction(row.category));
-                    category_elements[row.category] = category_element;
-                }
-                const subcategory = createSubCategoryElement(row);
-                category_element.subcategories.push(subcategory);
-            });
-            // Append to web page
-            setCategoryInCategories(category_elements);
-        })
-        .catch(err => {
-            console.error(err);
-        })
-        .then(arg => fetch(`${url.origin}/getDirectoryList`))
-        .then(res => res.json()) // { directory:, displayName: directory_displayName }
-        .then(list => {
-            list.forEach(row => {
-                directory_displayName[row.directory] = row.displayName;
-            })
-        })
-        .then(arg => fetch(`${url.origin}/getDirectorySubCategoryList`))
-        .then(res => res.json()) // { directory:, category:, subcategory:, displayName: directory_displayName }
-        .then(list => {
-            list.forEach(row => {
-                let directory_element = null;
-                if (!!directory_elements[row.directory]) {
-                    directory_element = directory_elements[row.directory];
-                } else {
-                    directory_element = createCategoryElement(row, directory_displayName[row.directory], directoryNameClickFunction(row.directory));
-                    directory_elements[row.directory] = directory_element;
-                }
-                const subcategory = createDirectorySubCategoryElement(row.directory, row.category, [ row.subcategory ], subcategory_displayName[row.subcategory]);
-                directory_element.subcategories.push(subcategory);
-            });
-            // Do NOT append to WebGUI yet.
-        })
-        .catch(err => {
-            console.error(err);
-        })
-        .then(arg => fetch(`${url.origin}/getPlaylistList`))
-        .then(res => res.json()) // { playlist: }
-        .then(list => {
-            list.forEach(row => {
-                g_playlist_elements[row.playlist] =
-                    createCategoryElement(row, row.playlist, playlistNameClickFunction(row.playlist));
-                g_playlist_elements[row.playlist].addEventListener(
-                    'contextmenu',
-                    playlistNameClickFunction(row.playlist));
-            });
-            // Do NOT append to WebGUI yet.
-        })
-        .catch(err => {
-            console.error(err);
-        });
 
     const category_menu_mode = document.getElementById('category_menu_mode')
     category_menu_mode.addEventListener(
@@ -115,6 +44,87 @@ window.onload = () => {
                 setCategoryInCategories(g_playlist_elements);
             }
         });
+    // Get list form server
+    const getMenuList = () => {
+        fetch(`${url.origin}/getCategoryList`)
+            .then(res => res.json()) // { category:, displayName: category_displayName }
+            .then(list => {
+                list.forEach(row => {
+                    category_displayName[row.category] = row.displayName;
+                });
+            })
+            .then(res => fetch(`${url.origin}/getSubCategoryList`))
+            .then(res => res.json()) // { category:, subcategory:, displayName: subcategory_displayName }
+            .then(list => {
+                list.forEach(row => {
+                    subcategory_displayName[row.subcategory] = row.displayName;
+                });
+                list.forEach(row => {
+                    let category_element = null;
+                    if (!!category_elements[row.category]) {
+                        category_element = category_elements[row.category];
+                    } else {
+                        category_element = createCategoryElement(row, category_displayName[row.category], categoryNameClickFunction(row.category));
+                        category_elements[row.category] = category_element;
+                    }
+                    const subcategory = createSubCategoryElement(row);
+                    category_element.subcategories.push(subcategory);
+                });
+                // Do NOT append to WebGUI yet.
+            })
+            .catch(err => {
+                console.error(err);
+            })
+            .then(arg => fetch(`${url.origin}/getDirectoryList`))
+            .then(res => res.json()) // { directory:, displayName: directory_displayName }
+            .then(list => {
+                list.forEach(row => {
+                    directory_displayName[row.directory] = row.displayName;
+                })
+            })
+            .then(arg => fetch(`${url.origin}/getDirectorySubCategoryList`))
+            .then(res => res.json()) // { directory:, category:, subcategory:, displayName: directory_displayName }
+            .then(list => {
+                list.forEach(row => {
+                    let directory_element = null;
+                    if (!!directory_elements[row.directory]) {
+                        directory_element = directory_elements[row.directory];
+                    } else {
+                        directory_element = createCategoryElement(row, directory_displayName[row.directory], directoryNameClickFunction(row.directory));
+                        directory_elements[row.directory] = directory_element;
+                    }
+                    const subcategory = createDirectorySubCategoryElement(row.directory, row.category, [ row.subcategory ], subcategory_displayName[row.subcategory]);
+                    directory_element.subcategories.push(subcategory);
+                });
+                // Do NOT append to WebGUI yet.
+            })
+            .catch(err => {
+                console.error(err);
+            })
+            .then(arg => fetch(`${url.origin}/getPlaylistList`))
+            .then(res => res.json()) // { playlist: }
+            .then(list => {
+                list.forEach(row => {
+                    g_playlist_elements[row.playlist] =
+                        createCategoryElement(row, row.playlist, playlistNameClickFunction(row.playlist));
+                    g_playlist_elements[row.playlist].addEventListener(
+                        'contextmenu',
+                        playlistNameClickFunction(row.playlist));
+                });
+                // Do NOT append to WebGUI yet.
+            })
+            .catch(err => {
+                console.error(err);
+            })
+            .then(() => {
+                // Append to web page
+                category_menu_mode.dispatchEvent(new Event('change'));
+                // Update interval
+                setInterval(getMenuList, 10 * 1000);
+            });
+    };
+    getMenuList();
+
     document.getElementById('playlist_buttons_save').addEventListener(
         'click',
         (e) => {
