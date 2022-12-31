@@ -576,6 +576,13 @@ function getImagesInDirectory(directory, category, subcategories)
     fetch(`${url.origin}/getDirectoryImageList?directory=${encodeURIComponent(directory)}${!!category ? '&category=' + encodeURIComponent(category) : ''}${query.length > 0 ? '&' + query.join('&') : ''}`)
         .then(res => res.json())
         .then(list => {
+            if (g_vertical_split) {
+                // Clear all thumbnails in tmp_images
+                const tmp_images = document.getElementById('tmp_images');
+                while (tmp_images.childElementCount > 0) {
+                    tmp_images.children[0].remove();
+                }
+            }
             list.forEach(item => {
                 if (g_vertical_split) {
                     document.getElementById('tmp_images').appendChild(
@@ -593,6 +600,13 @@ function getImagesInPlaylist(playlist)
     fetch(`${url.origin}/getPlaylistImageList?playlist=${encodeURIComponent(playlist)}`)
         .then(res => res.json())
         .then(list => {
+            if (g_vertical_split) {
+                // Clear all thumbnails in tmp_images
+                const tmp_images = document.getElementById('tmp_images');
+                while (tmp_images.childElementCount > 0) {
+                    tmp_images.children[0].remove();
+                }
+            }
             list.forEach(item => {
                 if (g_vertical_split) {
                     document.getElementById('tmp_images').appendChild(
