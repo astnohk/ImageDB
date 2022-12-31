@@ -12,6 +12,7 @@ const g_playlist_elements = {};
 
 window.onload = () => {
     initVerticalSplitButton();
+    initClearImagesButton()
 
     const category_displayName = {};
     const subcategory_displayName = {};
@@ -279,6 +280,37 @@ function initVerticalSplitButton()
                 images.style.left = '0px';
             }
         });
+}
+
+function initClearImagesButton()
+{
+    const canvas = document.getElementById('clear_images_button');
+    const style = canvas.getBoundingClientRect();
+    const w = style.width;
+    const h  = style.height;
+    const r = Math.min(w, h) * 0.5;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = 'rgb(255,255,255)';
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = 'rgb(0,0,0)';
+    ctx.beginPath();
+    const angles = 8;
+    for (let i = 0; i < angles; ++i) {
+        const cos = Math.cos(2 * Math.PI * (i + 0.5) / angles);
+        const sin = Math.sin(2 * Math.PI * (i + 0.5) / angles);
+        ctx.moveTo(
+            w * 0.5 + r * 0.65 * sin,
+            h * 0.5 + r * 0.65 * cos);
+        ctx.lineTo(
+            w * 0.5 + r * 0.9 * sin,
+            h * 0.5 + r * 0.9 * cos);
+    }
+    ctx.stroke();
+
+    canvas.addEventListener('click', clearImages);
 }
 
 
@@ -888,5 +920,13 @@ function endDragImage(image)
     g_dragging.style.opacity = '1.0';
     g_dragging.style.outlineStyle = 'none';
     g_dragging = null;
+}
+
+function clearImages()
+{
+    const images = document.getElementById('images');
+    while (images.childElementCount > 0) {
+        images.children[0].remove();
+    }
 }
 

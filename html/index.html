@@ -147,9 +147,23 @@
     height: 24px;
     overflow: visible;
 }
+#clear_images_button {
+    display: inline-block;
+    position: relative;
+    vertical-align: top;
+    height: 24px;
+    width: 24px;
+    box-sizing: border-box;
+    border: 0;
+    outline-style: solid;
+    outline-width: 2px;
+    outline-color: rgb(128,128,255);
+    cursor: pointer;
+}
 #playlist_buttons_name {
     display: inline-block;
     position: relative;
+    vertical-align: top;
     height: 24px;
     width: 180px;
     box-sizing: border-box;
@@ -192,6 +206,7 @@
 }
 #playlist_buttons_save {
     position: relative;
+    vertical-align: top;
     height: 20px;
     padding-left: 10px;
     padding-right: 10px;
@@ -293,6 +308,7 @@ Image DB
         <span id="tmp_images"></span>
         <span id="playlist_images_wrapper">
             <span id="playlist_buttons">
+                <canvas id="clear_images_button"></canvas>
                 Playlist:
                 <input type="text" id="playlist_buttons_name">
                 <span id="playlist_buttons_save">save</span>
