@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import Database from 'better-sqlite3';
 
 export const table_name_directories = 'directories';
@@ -366,7 +367,15 @@ export function getCategoryImageList(dbname, category, subcategories)
             for (let filepath of filepath_filtered.values()) {
                 images.push(category_images[filepath]);
             }
-            images.sort();
+            images.sort((a, b) => {
+                a = path.basename(a.filepath) + a.mtime;
+                b = path.basename(b.filepath) + b.mtime;
+                let A = '';
+                let B = '';
+                for (let i = 0; i < a.length; ++i) A += a.charCodeAt(i);
+                for (let i = 0; i < b.length; ++i) B += b.charCodeAt(i);
+                return A.localeCompare(B);
+            });
             resolve(images);
         } catch (err) {
             reject(err);
