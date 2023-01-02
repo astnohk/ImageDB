@@ -790,10 +790,16 @@ function openImageViewer(thumbnail)
 
     viewer.changeImage = (direction) => {
         const images = document.getElementById('images');
+        const children = [];
+        images.childNodes.forEach((element) => {
+            if (element.className === 'thumbnails') {
+                children.push(element);
+            }
+        });
         let ind = -1;
-        if (images.children.length > 0) {
-            for (let i = 0; i < images.children.length; ++i) {
-                if (images.children[i] == thumbnail) {
+        if (children.length > 0) {
+            for (let i = 0; i < children.length; ++i) {
+                if (children[i] == thumbnail) {
                     ind = i;
                     break;
                 }
@@ -801,16 +807,16 @@ function openImageViewer(thumbnail)
             if (direction === 'prev') {
                 ind -= 1;
                 if (ind < 0) {
-                    ind += images.children.length;
+                    ind += children.length;
                 }
             } else if (direction === 'next') {
                 ind += 1;
-                ind = ind % images.children.length;
+                ind = ind % children.length;
             }
         }
         // Update to new src
         if (ind >= 0) {
-            thumbnail = images.children[ind];
+            thumbnail = children[ind];
             viewer.image.src = thumbnail.originalSourceURL;
             viewer.rotateImage(0);
             viewer.titleElement.innerText = `${thumbnail.filepath}`;
@@ -820,19 +826,27 @@ function openImageViewer(thumbnail)
         const images = document.getElementById('images');
         let removeTarget = thumbnail;
         let ind = -1;
-        if (images.children.length > 0) {
-            for (let i = 0; i < images.children.length; ++i) {
-                if (images.children[i] == thumbnail) {
+        const children = [];
+        images.childNodes.forEach((element) => {
+            if (element.className === 'thumbnails') {
+                children.push(element);
+            }
+        });
+        if (children.length > 0) {
+            for (let i = 0; i < children.length; ++i) {
+                if (children[i] == thumbnail) {
                     ind = i;
                     break;
                 }
             }
-            ind = (ind + 1) % images.children.length;
+            ind = (ind + 1) % children.length;
         }
         // Move to next image
-        if (ind >= 0 && images.children[ind] != thumbnail) {
+        if (ind >= 0 &&
+            children[ind] != thumbnail)
+        {
             // Update to new src
-            thumbnail = images.children[ind];
+            thumbnail = children[ind];
             viewer.image.src = thumbnail.originalSourceURL;
             viewer.rotateImage(0);
             viewer.titleElement.innerText = `${thumbnail.filepath}`;
