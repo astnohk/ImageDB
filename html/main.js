@@ -671,6 +671,10 @@ function createImageThumbnail_temporal(filepath, category, subcategories)
 function createImageThumbnail(filepath, category, subcategories)
 {
     const thumbnail = createImageThumbnailElement(filepath)
+    thumbnail.filepath = filepath.replaceAll('\\', '/'); // Convert Win style path to UNIX style
+    thumbnail.category = category;
+    thumbnail.subcategories = subcategories;
+
     thumbnail.addEventListener(
         'mousedown',
         (e) => {
@@ -745,11 +749,18 @@ function openImageViewer(thumbnail)
     const viewer = document.createElement('div');
     viewer.className = 'fullscreen_viewer';
     document.body.appendChild(viewer);
-
+    // Image element
     viewer.image = document.createElement('img');
     viewer.image.src = thumbnail.originalSourceURL;
     viewer.image.className = 'fullscreen_viewer_image';
     viewer.appendChild(viewer.image);
+    // Title element
+    console.log(viewer.titleElement);
+    viewer.titleElement = document.createElement('div');
+    viewer.titleElement.className = 'fullscreen_viewer_title';
+    viewer.titleElement.innerText = `${thumbnail.filepath}`;
+    viewer.appendChild(viewer.titleElement);
+
     viewer.changeImage = (direction) => {
         const images = document.getElementById('images');
         let ind = -1;
@@ -775,6 +786,7 @@ function openImageViewer(thumbnail)
             thumbnail = images.children[ind];
             viewer.image.src = thumbnail.originalSourceURL;
             viewer.rotateImage(0);
+            viewer.titleElement.innerText = `${thumbnail.filepath}`;
         }
     };
     viewer.removeImage = () => {
@@ -796,6 +808,7 @@ function openImageViewer(thumbnail)
             thumbnail = images.children[ind];
             viewer.image.src = thumbnail.originalSourceURL;
             viewer.rotateImage(0);
+            viewer.titleElement.innerText = `${thumbnail.filepath}`;
         } else {
             viewer.remove();
         }
