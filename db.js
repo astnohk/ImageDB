@@ -534,8 +534,9 @@ export function deleteImage(dbname, filepath)
     }
     //// subcategory
     for (let subcategory of subcategories) {
-        const subcategory_image = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = ? AND subcategory = ?`).get(subcategory.category, subcategory.subcategory);
+        const subcategory_image = db.prepare(`SELECT filepath FROM ${table_name_subcategory_images} WHERE category = ? AND subcategory = ?`).all(subcategory.category, subcategory.subcategory);
         if (subcategory_image.length == 0) {
+            // Delete empty subcategory
             db.prepare(`DELETE FROM ${table_name_subcategories} WHERE category = ? AND subcategory = ?`).run(subcategory.category, subcategory.subcategory);
             db.prepare(`DELETE FROM ${table_name_directory_subcategories} WHERE category = ? AND subcategory = ?`).run(subcategory.category, subcategory.subcategory);
         }
