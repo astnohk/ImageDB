@@ -742,9 +742,14 @@ function createImageThumbnailElement(filepath)
 
 function openImageViewer(thumbnail)
 {
-    const viewer = document.createElement('img');
+    const viewer = document.createElement('div');
     viewer.className = 'fullscreen_viewer';
-    viewer.src = thumbnail.originalSourceURL;
+    document.body.appendChild(viewer);
+
+    viewer.image = document.createElement('img');
+    viewer.image.src = thumbnail.originalSourceURL;
+    viewer.image.className = 'fullscreen_viewer_image';
+    viewer.appendChild(viewer.image);
     viewer.changeImage = (direction) => {
         const images = document.getElementById('images');
         let ind = -1;
@@ -768,7 +773,7 @@ function openImageViewer(thumbnail)
         // Update to new src
         if (ind >= 0) {
             thumbnail = images.children[ind];
-            viewer.src = thumbnail.originalSourceURL;
+            viewer.image.src = thumbnail.originalSourceURL;
             viewer.rotateImage(0);
         }
     };
@@ -789,7 +794,7 @@ function openImageViewer(thumbnail)
         if (ind >= 0 && images.children[ind] != thumbnail) {
             // Update to new src
             thumbnail = images.children[ind];
-            viewer.src = thumbnail.originalSourceURL;
+            viewer.image.src = thumbnail.originalSourceURL;
             viewer.rotateImage(0);
         } else {
             viewer.remove();
@@ -800,29 +805,29 @@ function openImageViewer(thumbnail)
     viewer.rotateImage = (rotate) => {
         thumbnail.imageRotation = (thumbnail.imageRotation + rotate) % 4;
         if (thumbnail.imageRotation == 0) {
-            viewer.style.rotate = '0deg';
-            viewer.style.top = '0px';
-            viewer.style.left = '0px';
-            viewer.style.width = '100%';
-            viewer.style.height = '100%';
+            viewer.image.style.rotate = '0deg';
+            viewer.image.style.top = '0px';
+            viewer.image.style.left = '0px';
+            viewer.image.style.width = '100%';
+            viewer.image.style.height = '100%';
         } else if (thumbnail.imageRotation == 1) {
-            viewer.style.rotate = '90deg';
-            viewer.style.top = `${Math.floor((window.innerWidth - window.innerHeight) * -0.5)}px`;
-            viewer.style.left = `${Math.floor((window.innerHeight - window.innerWidth) * -0.5)}px`;
-            viewer.style.width = `${window.innerHeight + 1}px`;
-            viewer.style.height = `${window.innerWidth + 1}px`;
+            viewer.image.style.rotate = '90deg';
+            viewer.image.style.top = `${Math.floor((window.innerWidth - window.innerHeight) * -0.5)}px`;
+            viewer.image.style.left = `${Math.floor((window.innerHeight - window.innerWidth) * -0.5)}px`;
+            viewer.image.style.width = `${window.innerHeight + 1}px`;
+            viewer.image.style.height = `${window.innerWidth + 1}px`;
         } else if (thumbnail.imageRotation == 2) {
-            viewer.style.rotate = '180deg';
-            viewer.style.top = '0px';
-            viewer.style.left = '0px';
-            viewer.style.width = '100%';
-            viewer.style.height = '100%';
+            viewer.image.style.rotate = '180deg';
+            viewer.image.style.top = '0px';
+            viewer.image.style.left = '0px';
+            viewer.image.style.width = '100%';
+            viewer.image.style.height = '100%';
         } else if (thumbnail.imageRotation == 3) {
-            viewer.style.rotate = '270deg';
-            viewer.style.top = `${Math.floor((window.innerWidth - window.innerHeight) * -0.5)}px`;
-            viewer.style.left = `${Math.floor((window.innerHeight - window.innerWidth) * -0.5)}px`;
-            viewer.style.width = `${window.innerHeight + 1}px`;
-            viewer.style.height = `${window.innerWidth + 1}px`;
+            viewer.image.style.rotate = '270deg';
+            viewer.image.style.top = `${Math.floor((window.innerWidth - window.innerHeight) * -0.5)}px`;
+            viewer.image.style.left = `${Math.floor((window.innerHeight - window.innerWidth) * -0.5)}px`;
+            viewer.image.style.width = `${window.innerHeight + 1}px`;
+            viewer.image.style.height = `${window.innerWidth + 1}px`;
         }
     };
     // Event Listeners
@@ -875,7 +880,6 @@ function openImageViewer(thumbnail)
     g_current_viewer = viewer;
     // Apply rotation
     viewer.rotateImage(0);
-    document.body.appendChild(viewer);
 }
 
 function startDragImage(image)
