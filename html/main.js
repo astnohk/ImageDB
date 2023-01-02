@@ -983,8 +983,13 @@ function endDragImage(image)
 function clearImages()
 {
     const images = document.getElementById('images');
-    while (images.childElementCount > 0) {
-        images.children[0].remove();
+    let ind = 0;
+    while (images.childElementCount > ind) {
+        if (images.children[ind].className === 'thumbnails') {
+            images.children[ind].remove();
+        } else {
+            ind += 1;
+        }
     }
 }
 
