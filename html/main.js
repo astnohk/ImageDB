@@ -152,12 +152,16 @@ window.onload = () => {
                 images: [],
             };
             const images = document.getElementById('images');
+            let number = 0;
             for (let i = 0; i < images.children.length; ++i) {
-                playlist.images.push({
-                    playlist: playlist.playlist,
-                    number: i,
-                    filepath: images.children[i].originalFilePath, // thumbnail
-                });
+                if (images.children[i].className === 'thumbnails') {
+                    playlist.images.push({
+                        playlist: playlist.playlist,
+                        number: number,
+                        filepath: images.children[i].originalFilePath, // thumbnail
+                    });
+                    number += 1;
+                }
             }
             fetch(`/savePlaylistImageList`,
                 {
