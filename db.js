@@ -560,3 +560,20 @@ export function checkImageExistence(dbname)
     }
 }
 
+export function getStatsOfTables(dbname)
+{
+    const db = new Database(dbname);
+    const images = db.prepare(`SELECT COUNT(filepath) FROM ${table_name_images}`).get();
+    const directories = db.prepare(`SELECT COUNT(directory) FROM ${table_name_directories}`).get();
+    const categories = db.prepare(`SELECT COUNT(category) FROM ${table_name_categories}`).get();
+    const subcategories = db.prepare(`SELECT COUNT(subcategory) FROM ${table_name_subcategories}`).get();
+    const playlists = db.prepare(`SELECT COUNT(playlist) FROM ${table_name_playlists}`).get();
+    return {
+        images: images['COUNT(filepath)'],
+        directories: directories['COUNT(directory)'],
+        categories: categories['COUNT(category)'],
+        subcategories: subcategories['COUNT(subcategory)'],
+        playlists: playlists['COUNT(playlist)'],
+    };
+}
+

@@ -155,7 +155,6 @@ async function main()
     database.createTablePlaylistImages(dbname);
 
     // Search files
-    console.log(process.argv);
     if (process.argv.length < 3) {
         console.error('You need to specify root dir.');
         return;
@@ -163,6 +162,15 @@ async function main()
     if (process.argv[2] === '--clean') {
         // Check all filepath and cleanup broken links
         database.checkImageExistence(dbname);
+    } else if (process.argv[2] === '--stats') {
+        // Check all filepath and cleanup broken links
+        const stats = database.getStatsOfTables(dbname);
+        console.log('stats:\n' +
+            `    images: ${stats['images']}\n` +
+            `    directories: ${stats['directories']}\n` +
+            `    categories: ${stats['categories']}\n` +
+            `    subcategories: ${stats['subcategories']}\n` +
+            `    playlists: ${stats['playlists']}\n`);
     } else {
         // Search specified directory and store image paths
         console.log(`Read '${process.argv[2]}'...`);
