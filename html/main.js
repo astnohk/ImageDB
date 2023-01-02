@@ -7,6 +7,7 @@ var g_current_viewer = null;
 var g_dragging = null;
 var g_mousedown_time = new Date();
 var g_vertical_split = false;
+var g_insertbox = null;
 
 const g_playlist_elements = {};
 
@@ -274,7 +275,13 @@ function initVerticalSplitButton()
                 document.getElementById('tmp_images').style.display = 'inline-block';
                 const images = document.getElementById('playlist_images_wrapper');
                 images.style.left = '50%';
+                // Append insert empty box
+                g_insertbox = createEmptyBox();
+                document.getElementById('images').appendChild(g_insertbox);
             } else {
+                // Remove insert empty box
+                g_insertbox.remove();
+                g_insertbox = null;
                 document.getElementById('tmp_images').style.display = 'none';
                 const images = document.getElementById('playlist_images_wrapper');
                 images.style.left = '0px';
@@ -627,8 +634,11 @@ function createImageThumbnail_temporal(filepath, category, subcategories)
         (e) => {
             e.stopPropagation();
             e.preventDefault();
-            document.getElementById('images').appendChild(
-                createImageThumbnail(filepath, category, subcategories));
+            if (g_insertbox) {
+                document.getElementById('images').insertBefore(
+                    createImageThumbnail(filepath, category, subcategories),
+                    g_insertbox);
+            }
         });
     thumbnail.info = null;
     thumbnail.addEventListener(
@@ -744,6 +754,24 @@ function createImageThumbnailElement(filepath)
     return thumbnail;
 }
 
+function createEmptyBox()
+{
+    const emptybox = document.createElement('div');
+    emptybox.className = 'emptybox';
+
+    emptybox.addEventListener(
+        'mousedown',
+        (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            g_mousedown_time = new Date();
+            // Dragging
+            startDragImage(emptybox);
+        });
+
+    return emptybox;
+}
+
 function openImageViewer(thumbnail)
 {
     const viewer = document.createElement('div');
@@ -755,7 +783,6 @@ function openImageViewer(thumbnail)
     viewer.image.className = 'fullscreen_viewer_image';
     viewer.appendChild(viewer.image);
     // Title element
-    console.log(viewer.titleElement);
     viewer.titleElement = document.createElement('div');
     viewer.titleElement.className = 'fullscreen_viewer_title';
     viewer.titleElement.innerText = `${thumbnail.filepath}`;
