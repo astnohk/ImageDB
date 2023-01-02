@@ -49,3 +49,15 @@ Images can be moved by drag and drop.
 You can move to prev/next image by arrow keys (`←`, `→`) or `wheel up`/`wheel down`. You can delete the image from current workspace by pressing `del` key or swipe up over half of your touch display.
 
 ![Load Images](./docs/images/main_screen_0004.jpg)
+
+
+
+### Other features
+
+#### Clean-up DB
+
+`$ npm run clean` or `$ node store.js --clean` will clean-up your DB. It will delete all broken links (file is not exists).
+
+#### Stats
+
+`$ npm run stats` or `$ node store.js --stats` shows count of unique images, categories, directories and playlists.
