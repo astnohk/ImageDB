@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "live-server --https=./node_modules/live-server-https ."
+    "start": "node server.js",
+    "store": "node store.js",
+    "clean": "node store.js --clean",
+    "stats": "node store.js --stats"
   },
   "type": "module",
   "author": "",
