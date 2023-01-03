@@ -4,8 +4,10 @@ import sharp from 'sharp';
 
 import * as database from './db.js';
 
+const threshold = 1E-5;
+
+// Parameters
 const shrinked_size = 12;
-const quantize_level = 8;
 const dbname = 'main.db';
 
 
@@ -63,7 +65,7 @@ async function main()
             }
             // Normalize
             sum /= (3 * shrinked_size * shrinked_size);
-            if (sum <= 1E-6) {
+            if (sum <= threshold) {
                 console.log(`${target_path}:`);
                 console.log(`    ${comparative_path}: ${sum / 3 / shrinked_size / shrinked_size}`);
                 if (!similarImages[target_path]) {
