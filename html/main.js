@@ -1085,5 +1085,7 @@ function clearImages()
             ind += 1;
         }
     }
+    // Clear playlist name
+    document.getElementById('playlist_buttons_name').value = '';
 }
 
