@@ -257,11 +257,23 @@ function initVerticalSplitButton()
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, w, h);
-    ctx.strokeStyle = 'rgb(0,0,0)';
     ctx.lineWidth = 2;
-    ctx.strokeRect(1, 1, 6, 18);
-    ctx.strokeRect(12, 1, 6, 18);
+    const t_start = -5;
+    const t_end = 15;
+    let t = t_start;
+    setInterval(
+        () => {
+            const T = 9.0 / (1.0 + Math.exp(-t));
+            ctx.clearRect(0, 0, w, h);
+            ctx.strokeStyle = 'rgb(0,0,0)';
+            ctx.strokeRect(1, 1, T - 2, 18);
+            ctx.strokeRect(T + 1, 1, 18 - 2 - T, 18);
+            t += 0.5;
+            if (t > t_end) {
+                t = t_start;
+            }
+        },
+        70);
 
     canvas.addEventListener(
         'click',
