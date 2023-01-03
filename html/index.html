@@ -58,13 +58,30 @@
     position: absolute;
     top: 0px;
     left: 0px;
+    height: 20px;
     width: 180px;
     font-size: 16px;
     font-weight: normal;
 }
-#categories {
+#search_input {
+    display: inline-block;
     position: absolute;
     top: 20px;
+    left: 0px;
+    height: 20px;
+    width: 180px;
+    box-sizing: border-box;
+    font-size: 16px;
+    font-weight: normal;
+    color: rgb(0,0,0);
+    border: 0;
+    outline-style: solid;
+    outline-width: 1px;
+    outline-color: rgb(0,0,0);
+}
+#categories {
+    position: absolute;
+    top: 40px;
     left: 0px;
     bottom: 0px;
     width: 180px;
@@ -110,6 +127,10 @@
     white-space: nowrap;
     overflow-x: hidden;
     cursor: pointer;
+    opacity: 1.0;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+    transition-timing-function: linear;
 }
 
 #images_wrapper {
@@ -349,8 +370,8 @@ Image DB
         <option>Directory</option>
         <option>Playlist</option>
     </select>
-    <span id="categories">
-    </span>
+    <input type="text" id="search_input">
+    <span id="categories"></span>
     <span id="images_wrapper">
         <!-- images area -->
         <span id="tmp_images"></span>

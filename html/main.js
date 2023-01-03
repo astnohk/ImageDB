@@ -13,7 +13,8 @@ const g_playlist_elements = {};
 
 window.onload = () => {
     initVerticalSplitButton();
-    initClearImagesButton()
+    initClearImagesButton();
+    initSearchBar();
 
     const category_displayName = {};
     const subcategory_displayName = {};
@@ -324,11 +325,62 @@ function initClearImagesButton()
     canvas.addEventListener('click', clearImages);
 }
 
+function initSearchBar()
+{
+    const bar = document.getElementById('search_input');
+    bar.addEventListener(
+        'input',
+        (e) => {
+            const input = bar.value.toLowerCase();
+            console.log(input);
+            if (input.length == 0) {
+                categories.childNodes.forEach((element) => {
+                    element.style.display = 'block';
+                    for (let key of Object.keys(element.subcategories)) {
+                        element.subcategories[key].style.opacity = '1.0';
+                    }
+                });
+            } else {
+                const categories = document.getElementById('categories');
+                categories.childNodes.forEach((element) => {
+                    let found = false;
+                    if (element.className === 'category') {
+                        // Check category
+                        if (element.category.slice(0, input.length).toLowerCase() === input)
+                        {
+                            found = true;
+                        }
+                        // Check subcategories
+                        let found_sub = false;
+                        for (let key of Object.keys(element.subcategories)) {
+                            if (found ||
+                                element.subcategories[key].subcategory.slice(0, input.length).toLowerCase() === input)
+                            {
+                                element.subcategories[key].style.opacity = '1.0';
+                                found_sub = true;
+                            } else {
+                                element.subcategories[key].style.opacity = '0.2';
+                            }
+                        }
+                        // OR
+                        found = found || found_sub;
+                    }
+                    if (found) {
+                        element.style.display = 'block';
+                    } else {
+                        element.style.display = 'none';
+                    }
+                });
+            }
+        });
+}
+
 
 function createCategoryElement(data, displayName, nameClickFunction)
 {
     const category_element = document.createElement('div');
     category_element.className = 'category';
+    category_element.category = data.category;
     category_element.displayName = displayName;
     category_element.opening = false;
     // Title
@@ -501,6 +553,8 @@ function createSubCategoryElement(data)
 {
     const subcategory = document.createElement('div');
     subcategory.className = 'subcategory';
+    subcategory.category = data.category;
+    subcategory.subcategory = data.subcategory;
     subcategory.displayName = data.displayName;
     subcategory.innerText = `+ ${data.displayName}`;
     subcategory.addEventListener(
