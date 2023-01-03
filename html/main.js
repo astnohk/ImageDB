@@ -54,6 +54,9 @@ window.onload = () => {
             .then(list => {
                 list.forEach(row => {
                     category_displayName[row.category] = row.displayName;
+                    const category_element = createCategoryElement(row, category_displayName[row.category], categoryNameClickFunction(row.category));
+                    category_element.subcategories = {};
+                    category_elements[row.category] = category_element;
                 });
             })
             .then(res => fetch(`${url.origin}/getSubCategoryList`))
@@ -63,14 +66,7 @@ window.onload = () => {
                     subcategory_displayName[row.subcategory] = row.displayName;
                 });
                 list.forEach(row => {
-                    let category_element = null;
-                    if (!!category_elements[row.category]) {
-                        category_element = category_elements[row.category];
-                    } else {
-                        category_element = createCategoryElement(row, category_displayName[row.category], categoryNameClickFunction(row.category));
-                        category_element.subcategories = {};
-                        category_elements[row.category] = category_element;
-                    }
+                    let category_element = category_elements[row.category];
                     if (!category_element.subcategories[row.subcategory]) {
                         const subcategory = createSubCategoryElement(row);
                         category_element.subcategories[row.subcategory] = subcategory;
@@ -86,20 +82,16 @@ window.onload = () => {
             .then(list => {
                 list.forEach(row => {
                     directory_displayName[row.directory] = row.displayName;
+                    const directory_element = createCategoryElement(row, directory_displayName[row.directory], directoryNameClickFunction(row.directory));
+                    directory_element.subcategories = {};
+                    directory_elements[row.directory] = directory_element;
                 })
             })
             .then(arg => fetch(`${url.origin}/getDirectorySubCategoryList`))
             .then(res => res.json()) // { directory:, category:, subcategory:, displayName: directory_displayName }
             .then(list => {
                 list.forEach(row => {
-                    let directory_element = null;
-                    if (!!directory_elements[row.directory]) {
-                        directory_element = directory_elements[row.directory];
-                    } else {
-                        directory_element = createCategoryElement(row, directory_displayName[row.directory], directoryNameClickFunction(row.directory));
-                        directory_element.subcategories = {};
-                        directory_elements[row.directory] = directory_element;
-                    }
+                    let directory_element = directory_elements[row.directory];
                     if (!directory_element.subcategories[row.subcategory]) {
                         const subcategory = createDirectorySubCategoryElement(row.directory, row.category, row.subcategory, subcategory_displayName[row.subcategory]);
                         directory_element.subcategories[row.subcategory] = subcategory;
