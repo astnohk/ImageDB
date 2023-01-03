@@ -522,7 +522,6 @@ export function deleteImage(dbname, filepath)
     //// category
     const category_image = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE category = ?`).all(info.category);
     if (category_image.length == 0) {
-        db.prepare(`DELETE FROM ${table_name_directories} WHERE category = ?`).run(info.category);
         db.prepare(`DELETE FROM ${table_name_categories} WHERE category = ?`).run(info.category);
         db.prepare(`DELETE FROM ${table_name_subcategories} WHERE category = ?`).run(info.category);
     }
