@@ -101,7 +101,7 @@ window.onload = () => {
                         directory_elements[row.directory] = directory_element;
                     }
                     if (!directory_element.subcategories[row.subcategory]) {
-                        const subcategory = createDirectorySubCategoryElement(row.directory, row.category, [ row.subcategory ], subcategory_displayName[row.subcategory]);
+                        const subcategory = createDirectorySubCategoryElement(row.directory, row.category, row.subcategory, subcategory_displayName[row.subcategory]);
                         directory_element.subcategories[row.subcategory] = subcategory;
                     }
                 });
@@ -114,6 +114,7 @@ window.onload = () => {
             .then(res => res.json()) // { playlist: }
             .then(list => {
                 list.forEach(row => {
+                    row.category = row.playlist; // Use playlist as category
                     if (!g_playlist_elements[row.playlist]) {
                         g_playlist_elements[row.playlist] =
                             createCategoryElement(row, row.playlist, playlistNameClickFunction(row.playlist));
@@ -327,52 +328,66 @@ function initClearImagesButton()
 
 function initSearchBar()
 {
-    const bar = document.getElementById('search_input');
-    bar.addEventListener(
-        'input',
-        (e) => {
-            const input = bar.value.toLowerCase();
-            console.log(input);
-            if (input.length == 0) {
-                categories.childNodes.forEach((element) => {
-                    element.style.display = 'block';
-                    for (let key of Object.keys(element.subcategories)) {
-                        element.subcategories[key].style.opacity = '1.0';
-                    }
-                });
-            } else {
-                const categories = document.getElementById('categories');
-                categories.childNodes.forEach((element) => {
-                    let found = false;
-                    if (element.className === 'category') {
-                        // Check category
-                        if (element.category.slice(0, input.length).toLowerCase() === input)
-                        {
-                            found = true;
-                        }
-                        // Check subcategories
-                        let found_sub = false;
-                        for (let key of Object.keys(element.subcategories)) {
-                            if (found ||
-                                element.subcategories[key].subcategory.slice(0, input.length).toLowerCase() === input)
-                            {
-                                element.subcategories[key].style.opacity = '1.0';
-                                found_sub = true;
-                            } else {
-                                element.subcategories[key].style.opacity = '0.2';
-                            }
-                        }
-                        // OR
-                        found = found || found_sub;
-                    }
-                    if (found) {
-                        element.style.display = 'block';
-                    } else {
-                        element.style.display = 'none';
-                    }
-                });
+    document.getElementById('search_input')
+        .addEventListener('input', searchSearchInputString);
+}
+
+function searchSearchInputString()
+{
+    const input = document.getElementById('search_input')
+        .value.toLowerCase();
+    if (input.length == 0) {
+        // Clear search result (show all elements)
+        categories.childNodes.forEach((element) => {
+            element.style.display = 'block';
+            for (let key of Object.keys(element.subcategories)) {
+                element.subcategories[key].style.opacity = '1.0';
             }
         });
+    } else {
+        // Search
+        const categories = document.getElementById('categories');
+        categories.childNodes.forEach((element) => {
+            let found = false;
+            if (element.className === 'category') {
+                // Check directory if it is directory element
+                if (!!element.directory &&
+                    element.directory.toLowerCase().indexOf(input) >= 0)
+                {
+                    found = true;
+                }
+                // Check category
+                if (element.category.toLowerCase().indexOf(input) >= 0)
+                {
+                    found = true;
+                }
+                // Check displayName
+                if (element.displayName.toLowerCase().indexOf(input) >= 0)
+                {
+                    found = true;
+                }
+                // Check subcategories
+                let found_sub = false;
+                for (let key of Object.keys(element.subcategories)) {
+                    if (found ||
+                        element.subcategories[key].subcategory.toLowerCase().indexOf(input) >= 0)
+                    {
+                        element.subcategories[key].style.opacity = '1.0';
+                        found_sub = true;
+                    } else {
+                        element.subcategories[key].style.opacity = '0.2';
+                    }
+                }
+                // OR
+                found = found || found_sub;
+            }
+            if (found) {
+                element.style.display = 'block';
+            } else {
+                element.style.display = 'none';
+            }
+        });
+    }
 }
 
 
@@ -380,6 +395,9 @@ function createCategoryElement(data, displayName, nameClickFunction)
 {
     const category_element = document.createElement('div');
     category_element.className = 'category';
+    if (!!data.directory) {
+        category_element.directory = data.directory;
+    }
     category_element.category = data.category;
     category_element.displayName = displayName;
     category_element.opening = false;
@@ -567,20 +585,22 @@ function createSubCategoryElement(data)
     return subcategory;
 }
 
-function createDirectorySubCategoryElement(directory, category, subcategories, displayName)
+function createDirectorySubCategoryElement(directory, category, subcategory, displayName)
 {
-    const subcategory = document.createElement('div');
-    subcategory.className = 'subcategory';
-    subcategory.displayName = displayName;
-    subcategory.innerText = `+ ${displayName}`;
-    subcategory.addEventListener(
+    const element = document.createElement('div');
+    element.className = 'subcategory';
+    element.category = category;
+    element.subcategory = subcategory;
+    element.displayName = displayName;
+    element.innerText = `+ ${displayName}`;
+    element.addEventListener(
         'click',
         (e) => {
             e.preventDefault();
             e.stopPropagation();
-            getImagesInDirectory(directory, category, subcategories);
+            getImagesInDirectory(directory, category, [ subcategory ]);
         });
-    return subcategory;
+    return element;
 }
 
 function setCategoryInCategories(category_elements)
@@ -602,6 +622,8 @@ function setCategoryInCategories(category_elements)
         // Init button's event listener
         category_element.setOpenCloseButtonEventListener();
     }
+    // Apply search input
+    searchSearchInputString(null);
 }
 
 function getImagesInCategory(category, subcategories)
