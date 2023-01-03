@@ -39,16 +39,14 @@ And open `https://127.0.0.1:8443` in your browser. It shows the main window as b
 
 Tags will be shown if you click on `>` mark at the left of category name. You also be able to load some images by clicking on category or tags in left column.
 
-![Load Images](./docs/images/main_screen_0002.jpg)
+![Load Images](./docs/images/main_screen_0002.gif)
 
 Images can be moved by drag and drop.
 
-![Load Images](./docs/images/main_screen_0003.jpg)
+![Load Images](./docs/images/main_screen_0003.gif)
 
 `click` or `tap` on the image to open full size image viewer. The image will automatically be shrinked/magnified to fit to the window.  
 You can move to prev/next image by arrow keys (`←`, `→`) or `wheel up`/`wheel down`. You can delete the image from current workspace by pressing `del` key or swipe up over half of your touch display.
-
-![Load Images](./docs/images/main_screen_0004.jpg)
 
 
 
