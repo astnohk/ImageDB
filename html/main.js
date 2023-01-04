@@ -49,7 +49,7 @@ window.onload = () => {
         });
     // Get list form server
     const getMenuList = () => {
-        fetch(`${url.origin}/getCategoryList`)
+        return fetch(`${url.origin}/getCategoryList`)
             .then(res => res.json()) // { category:, displayName: category_displayName }
             .then(list => {
                 list.forEach(row => {
@@ -121,13 +121,17 @@ window.onload = () => {
                 console.error(err);
             })
             .then(() => {
-                // Append to web page
-                category_menu_mode.dispatchEvent(new Event('change'));
                 // Update interval
                 setTimeout(getMenuList, 30 * 1000);
             });
     };
-    getMenuList();
+    // Initialize
+    getMenuList()
+        .then(() => {
+            // Append to web page
+            category_menu_mode.dispatchEvent(new Event('change'));
+        })
+        .catch(err => console.error(err));
 
     document.getElementById('playlist_buttons_save').addEventListener(
         'click',
