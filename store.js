@@ -129,6 +129,7 @@ function createThumbnailImage(filepath)
             const image = await sharp(file)
                 .resize(thumbnail_size, thumbnail_size, {
                     fit: 'contain',
+                    kernel: sharp.kernel.cubic,
                     background: { r: 0, g: 0, b: 0, alpha: 0.0 },
                 })
                 .png()
