@@ -255,38 +255,17 @@ window.onload = () => {
 
 function initVerticalSplitButton()
 {
-    const canvas = document.getElementById('vertical_split_button');
-    const w = 20;
-    const h = 20;
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    ctx.lineWidth = 2;
-    const t_start = -5;
-    const t_end = 15;
-    let t = t_start;
-    setInterval(
-        () => {
-            const T = 9.0 / (1.0 + Math.exp(-t));
-            ctx.clearRect(0, 0, w, h);
-            ctx.strokeStyle = 'rgb(0,0,0)';
-            ctx.strokeRect(1, 1, T - 2, 18);
-            ctx.strokeRect(T + 1, 1, 18 - 2 - T, 18);
-            t += 0.5;
-            if (t > t_end) {
-                t = t_start;
-            }
-        },
-        70);
+    const button = document.getElementById('vertical_split_button');
 
-    canvas.addEventListener(
+    button.addEventListener(
         'click',
         (e) => {
             e.preventDefault();
             e.stopPropagation();
             g_vertical_split = !g_vertical_split;
             if (g_vertical_split) {
-                document.getElementById('tmp_images').style.display = 'inline-block';
+                const temporary = document.getElementById('tmp_images');
+                temporary.style.width = '50%';
                 const images = document.getElementById('playlist_images_wrapper');
                 images.style.left = '50%';
                 // Append insert empty box
@@ -296,9 +275,10 @@ function initVerticalSplitButton()
                 // Remove insert empty box
                 g_insertbox.remove();
                 g_insertbox = null;
-                document.getElementById('tmp_images').style.display = 'none';
+                const temporary = document.getElementById('tmp_images');
+                temporary.style.width = '0%';
                 const images = document.getElementById('playlist_images_wrapper');
-                images.style.left = '0px';
+                images.style.left = '0%';
             }
         });
 }

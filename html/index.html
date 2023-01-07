@@ -17,6 +17,37 @@
     left: 200px;
     width: 20px;
     height: 20px;
+    outline-style: solid;
+    outline-width: 2px;
+    outline-offset: -2px;
+    overflow: hidden;
+}
+.vertical_split_button_child {
+    position: absolute;
+    top: 0%;
+    left: 0%;
+    display: inline-block;
+    height: 100%;
+    width: 100%;
+    outline-style: solid;
+    outline-width: 4px;
+    outline-offset: -2px;
+    animation-name: vertical_split_button_anime;
+    animation-duration: 1.4s;
+    animation-timing-function: cubic-bezier(0.7, 0.0, 0.3, 1.0);
+    animation-delay: 0s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-fill-mode: forwards;
+    animation-play-state: running;
+}
+@keyframes vertical_split_button_anime {
+    0% {
+        left: 0px;
+    }
+    100% {
+        left: 48%;
+    }
 }
 
 #mainview {
@@ -145,22 +176,28 @@
     overflow: visible;
 }
 #tmp_images {
-    display: none;
+    display: inline-block;
     position: absolute;
     top: 0px;
     left: 0px;
-    right: 50%;
     bottom: 0px;
+    width: 0%;
     overflow-y: scroll;
+    transition-duration: 300ms;
+    transition-property: width;
+    transition-timing-function: ease;
 }
 #playlist_images_wrapper {
     display: inline-block;
     position: absolute;
     top: 0px;
-    left: 0px;
+    left: 0%;
     right: 0px;
     bottom: 0px;
     overflow: visible;
+    transition-duration: 300ms;
+    transition-property: left;
+    transition-timing-function: ease;
 }
 #playlist_buttons {
     position: absolute;
@@ -389,6 +426,8 @@ Image DB
         <!-- /images area -->
     </span>
 </div>
-<canvas id="vertical_split_button">
+<div id="vertical_split_button">
+    <div class="vertical_split_button_child"></div>
+</div>
 </body>
 </html>
