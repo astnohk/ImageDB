@@ -63,7 +63,7 @@ async function searchDirs(root)
                 }
                 // Parse Subcategories
                 if (split_.length >= 3) {
-                    for (let i = 1; i < split_.length - 1; ++i) {
+                    for (let i = 1; i < split_.length; ++i) {
                         let rNumber = split_[i].match(/[0-9]+/);
                         if (!!rNumber && split_[i] === rNumber[0]) {
                             // the string is file number
