@@ -54,7 +54,8 @@ async function searchDirs(root)
                 images.directories.add(root);
                 const filepath = path.join(root, file.name);
                 const stat = fs.lstatSync(filepath)
-                const split_ = path.basename(file.name).split('_');
+                const ind_ext = file.name.indexOf(path.extname(file.name));
+                const split_ = path.basename(file.name.slice(0, ind_ext)).split('_');
                 // Parse Category
                 let category = '';
                 if (split_.length >= 2) {
