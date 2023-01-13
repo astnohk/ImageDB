@@ -1,6 +1,11 @@
 # ImageDB
 Simple Image Management System Using Node.js.
 
+It parses filename of images such as `"Category_Subcategory1_Subcategory2_1234_p01.jpg"` and insert them into the DB.
+You can find images from the list filtered by *Category*, *Subcategory*, *Directory* or *Playlist* that you created.
+Playlists can be easily modified on the WebGUI. You can dragg&drop the image to reorder your sequence as desired.
+Vertical split mode leads you to easy way of creating massive image playlists.
+
 
 ## Setup
 
