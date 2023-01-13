@@ -177,6 +177,7 @@
 }
 #tmp_images {
     display: inline-block;
+    z-index: 100;
     position: absolute;
     top: 0px;
     left: 0px;
@@ -312,6 +313,7 @@
 }
 #images {
     display: inline-block;
+    z-index: 90;
     position: absolute;
     top: 30px;
     left: 0px;
@@ -328,8 +330,11 @@
     outline-width: 2px;
     outline-offset: -2px;
     outline-color: rgb(255, 0, 0);
+    filter: blur(0px);
+    transition-timing-function: linear;
 }
 .image_info {
+    z-index: 200;
     position: absolute;
     top: 0px;
     left: 0px;

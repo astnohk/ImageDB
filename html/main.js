@@ -703,9 +703,49 @@ function createImageThumbnail_temporal(filepath, category, subcategories)
             e.stopPropagation();
             e.preventDefault();
             if (g_insertbox) {
+                // Click effect by filter-function blur()
+                const transitionDuration = 300; // [msec]
+                thumbnail.style.transitionDuration = `1ms`;
+                thumbnail.style.filter = `blur(4px)`;
+                setTimeout(() => {
+                    thumbnail.style.transitionDuration = `${transitionDuration}ms`;
+                    thumbnail.style.filter = 'blur(0px)';
+                }, 60);
+                // Create flying thumbnail effect
+                const transition = createImageThumbnailElement(thumbnail.originalFilePath);
+                transition.style.position = 'absolute';
+                transition.style.opacity = '0.6';
+                transition.style.zIndex = '95';
+                // Set start position
+                const style = thumbnail.getBoundingClientRect();
+                transition.style.top = `${style.top}px`;
+                transition.style.left = `${style.left}px`;
+                document.body.appendChild(transition);
+                // Set transition property
+                transition.style.transitionProperty = 'top, left';
+                transition.style.transitionDuration = `${transitionDuration}ms`;
+                transition.style.transitionTimingFunction = 'cubic-bezier(0.5, 0.0, 0.9, 0.6)';
+                // Set end position and Start transition
+                const style_goal = g_insertbox.getBoundingClientRect();
+                const borderWidth = parseInt(window.getComputedStyle(g_insertbox).borderWidth, 10);
+                const scrollTop = parseInt(document.getElementById('images').scrollTop, 10);
+                transition.style.top = `${style_goal.top + borderWidth + scrollTop}px`;
+                transition.style.left = `${style_goal.left + borderWidth}px`;
+                // Insert new image to "images" before g_insertbox
+                // with opacity == 0.0 to hiding until flying thumbnail ends.
+                const newImage = createImageThumbnail(filepath, category, subcategories);
+                newImage.style.opacity = '0.0';
                 document.getElementById('images').insertBefore(
-                    createImageThumbnail(filepath, category, subcategories),
+                    newImage,
                     g_insertbox);
+                setTimeout(
+                    () => {
+                        // Show new image just after flying thumbnail landed.
+                        newImage.style.opacity = '1.0';
+                        // Remove flying thumbnail
+                        transition.remove();
+                    },
+                    transitionDuration);
             }
         });
     thumbnail.info = null;
