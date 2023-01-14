@@ -612,8 +612,13 @@ function setCategoryInCategories(category_elements)
         }
         // Append category list to page
         document.getElementById('categories').appendChild(category_element);
-        // Init button's event listener
-        category_element.setOpenCloseButtonEventListener();
+        if (subcategoryKeys.length > 0) {
+            // Init button's event listener
+            category_element.setOpenCloseButtonEventListener();
+        } else {
+            category_element.buttonElement.style.cursor = 'default';
+            category_element.buttonElement.style.opacity = '0.5';
+        }
     }
     // Apply search input
     searchSearchInputString(null);
@@ -629,6 +634,9 @@ function setNewerImagesInCategories()
             () => { getNewerImages(limitCount, i * limitCount); });
         // Append category list to page
         document.getElementById('categories').appendChild(category_element);
+        // Disable pulldown button
+        category_element.buttonElement.style.cursor = 'default';
+        category_element.buttonElement.style.opacity = '0.5';
     }
 }
 
