@@ -103,6 +103,18 @@ server.on('request', (request, response) => {
                         response.writeHead(500, { "Content-Type": "text/plain" });
                         response.end('500 Interval Server Error');
                     });
+            } else if (url.pathname === '/getImageInfo') {
+                database.getImageInfo(decodeURIComponent(dbname, url.searchParams.get('filepath')))
+                    .then(values => {
+                        response.writeHead(200, { "Content-Type": "application/json" });
+                        const body = JSON.stringify(values);
+                        response.end(body);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        response.writeHead(500, { "Content-Type": "text/plain" });
+                        response.end('500 Interval Server Error');
+                    });
             } else if (url.pathname === '/getThumbnailImage') {
                 database.getThumbnailImage(dbname, url.searchParams.get('filepath'))
                     .then(image => {
@@ -139,6 +151,20 @@ server.on('request', (request, response) => {
                         url.searchParams.get('category'),
                         url.searchParams.getAll('subcategory')
                     )
+                    .then(values => {
+                        response.writeHead(200, { "Content-Type": "application/json" });
+                        const body = JSON.stringify(values);
+                        response.end(body);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        response.writeHead(500, { "Content-Type": "text/plain" });
+                        response.end('500 Interval Server Error');
+                    });
+            } else if (url.pathname === '/getNewerImageList') {
+                const limit = parseInt(url.searchParams.get('limit'), 10);
+                const offset = parseInt(url.searchParams.get('offset'), 10);
+                database.getNewerImageList(dbname, limit, offset)
                     .then(values => {
                         response.writeHead(200, { "Content-Type": "application/json" });
                         const body = JSON.stringify(values);
