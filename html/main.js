@@ -45,6 +45,11 @@ window.onload = () => {
                     categories.removeChild(categories.children[i]);
                 }
                 setCategoryInCategories(g_playlist_elements);
+            } else if (mode === 'NewComing') {
+                for (let i = categories.childElementCount - 1; i >= 0; --i) {
+                    categories.removeChild(categories.children[i]);
+                }
+                setNewerImagesInCategories();
             }
         });
     // Get list form server
@@ -614,6 +619,19 @@ function setCategoryInCategories(category_elements)
     searchSearchInputString(null);
 }
 
+function setNewerImagesInCategories()
+{
+    const limitCount = 100;
+    for (let i = 0; i < 50; ++i) {
+        const category_element = createCategoryElement(
+            { category: '', },
+            `${i * limitCount + 1} - ${(i + 1) * limitCount}`,
+            () => { getNewerImages(limitCount, i * limitCount); });
+        // Append category list to page
+        document.getElementById('categories').appendChild(category_element);
+    }
+}
+
 function getImagesInCategory(category, subcategories)
 {
     let query = [];
@@ -673,6 +691,30 @@ function getImagesInDirectory(directory, category, subcategories)
 function getImagesInPlaylist(playlist)
 {
     fetch(`${url.origin}/getPlaylistImageList?playlist=${encodeURIComponent(playlist)}`)
+        .then(res => res.json())
+        .then(list => {
+            if (g_vertical_split) {
+                // Clear all thumbnails in tmp_images
+                const tmp_images = document.getElementById('tmp_images');
+                while (tmp_images.childElementCount > 0) {
+                    tmp_images.children[0].remove();
+                }
+            }
+            list.forEach(item => {
+                if (g_vertical_split) {
+                    document.getElementById('tmp_images').appendChild(
+                        createImageThumbnail_temporal(item.filepath, '', ''));
+                } else {
+                    document.getElementById('images').appendChild(
+                        createImageThumbnail(item.filepath, '', ''));
+                }
+            });
+        });
+}
+
+function getNewerImages(limit, offset)
+{
+    fetch(`${url.origin}/getNewerImageList?limit=${limit}&offset=${offset}`)
         .then(res => res.json())
         .then(list => {
             if (g_vertical_split) {
