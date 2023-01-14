@@ -326,6 +326,19 @@ export function checkImageFilepath(dbname, filepath)
     });
 }
 
+export function getImageInfo(dbname, filepath)
+{
+    return new Promise((resolve, reject) => {
+        try {
+            const db = new Database(dbname);
+            const value = db.prepare(`SELECT name,category,directory,size,ctime,mtime FROM ${table_name_images} WHERE filepath = ?`).get(decodeURIComponent(filepath));
+            resolve(value);
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
 export function getCategoryImageList(dbname, category, subcategories)
 {
     return new Promise((resolve, reject) => {
@@ -422,6 +435,19 @@ export function getDirectoryImageList(dbname, directory, category, subcategories
                 images.push(directory_images[filepath]);
             }
             images.sort();
+            resolve(images);
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+export function getNewerImageList(dbname, limit, offset)
+{
+    return new Promise((resolve, reject) => {
+        try {
+            const db = new Database(dbname);
+            const images = db.prepare(`SELECT filepath,ctime,mtime FROM ${table_name_images} ORDER BY mtime DESC LIMIT ? OFFSET ?`).all(limit, offset);
             resolve(images);
         } catch (err) {
             reject(err);
