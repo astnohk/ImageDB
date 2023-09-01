@@ -4,10 +4,10 @@ import sharp from 'sharp';
 
 import * as database from './db.js';
 
-const threshold = 0.004;
+const threshold = 0.001;
 
 // Parameters
-const shrinked_size = 12;
+const shrinked_size = 16;
 const dbname = 'main.db';
 
 

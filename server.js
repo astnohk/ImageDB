@@ -294,6 +294,14 @@ function loadImage(filepath)
 }
 
 
+// Initial access to DB
+database.getDirectoryImageList(
+        dbname,
+        "null",
+        "null",
+        "null"
+    )
+    .then(() => {});
 // Start HTTPS server
 server.listen(http_port);
 

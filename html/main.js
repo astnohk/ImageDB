@@ -12,6 +12,9 @@ var g_insertbox = null;
 const g_playlist_elements = {};
 
 window.onload = () => {
+    document.getElementById('mainview').addEventListener('drop', dragHandler);
+    document.getElementById('mainview').addEventListener('dragover', dragOverHandler);
+
     initVerticalSplitButton();
     initClearImagesButton();
     initSearchBar();
@@ -404,7 +407,14 @@ function createCategoryElement(data, displayName, nameClickFunction)
     // Name
     const name = document.createElement('div');
     name.className = 'categoryTitleName';
-    name.innerText = displayName;
+    name.innerText = displayName + "    ";
+    name.innerHTML += "&nbsp;&nbsp;&nbsp;&nbsp;";
+    name.addEventListener(
+        'mouseover',
+        startScrollName);
+    name.addEventListener(
+        'mouseleave',
+        stopScrollName);
     name.addEventListener(
         'click',
         nameClickFunction);
@@ -474,6 +484,32 @@ function playlistNameClickFunction(playlist)
                 ]);
         }
     };
+}
+
+function startScrollName(ev)
+{
+    ev.stopPropagation();
+    ev.preventDefault();
+    const target = ev.currentTarget;
+    const loop = () => {
+        const rect = target.getBoundingClientRect();
+        const width = rect.width;
+        const textWidth = target.scrollWidth;
+        target.scrollLeft = 
+            (target.scrollLeft + 1) % (textWidth - width);
+    };
+    target.scrollLoopMethod = setInterval(loop, 30);
+}
+
+function stopScrollName(ev)
+{
+    ev.stopPropagation();
+    ev.preventDefault();
+    const target = ev.currentTarget;
+    if (!! target.scrollLoopMethod)
+    {
+        clearInterval(target.scrollLoopMethod);
+    }
 }
 
 function deletePlaylist(playlist)
@@ -1165,5 +1201,39 @@ function clearImages()
     }
     // Clear playlist name
     document.getElementById('playlist_buttons_name').value = '';
+}
+
+
+
+// File input
+function dragHandler(ev)
+{
+    console.log('Files dropped');
+    ev.preventDefault();
+    if (ev.dataTransfer.items)
+    {
+        [...ev.dataTransfer.items].forEach((item, i) => {
+            console.log(i);
+            console.log(item.kind);
+            if (item.kind === 'file')
+            {
+                const file = item.getAsFile();
+                console.log(file);
+                console.log(`file[${i}].name = ${file.name}`);
+            }
+        });
+    }
+    else
+    {
+        [...ev.dataTransfer.files].forEach((file, i) => {
+            console.log(i);
+            console.log(`file[${i}].name = ${file.name}`);
+        });
+    }
+}
+
+function dragOverHandler(ev)
+{
+    ev.preventDefault();
 }
 
