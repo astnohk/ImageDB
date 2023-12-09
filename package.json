@@ -8,15 +8,24 @@
     "store": "node store.js",
     "clean": "node store.js --clean",
     "stats": "node store.js --stats",
-    "similar": "node searchSimilarImages.js"
+    "similar": "node searchSimilarImages.js",
+    "execute": "ts-node src/server.ts",
+    "build": "tsc -p ."
   },
   "type": "module",
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "better-sqlite3": "^7.6.2",
-    "canvas": "^2.10.2",
-    "sharp": "^0.31.2",
-    "ws": "^8.11.0"
+    "better-sqlite3": "^9.2.2",
+    "canvas": "^2.11.2",
+    "sharp": "^0.33.0",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/node": "^20.10.4",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.3.3"
   }
 }
