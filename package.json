@@ -9,7 +9,7 @@
     "clean": "node store.js --clean",
     "stats": "node store.js --stats",
     "similar": "node searchSimilarImages.js",
-    "execute": "ts-node src/server.ts",
+    "execute": "node --loader ts-node/esm src/server.ts",
     "build": "tsc -p ."
   },
   "type": "module",
