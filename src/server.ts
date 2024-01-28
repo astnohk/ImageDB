@@ -172,22 +172,34 @@ server.on('request', (request, response) => {
                 const directory: string | null = url.searchParams.get('directory');
                 const category: string | null = url.searchParams.get('category');
                 const subcategories: string[] | null = url.searchParams.getAll('subcategory');
-                database.getDirectoryImageList(
-                        dbname,
-                        directory !== null ? directory : "",
-                        category !== null ? category : "",
-                        subcategories !== null ? subcategories : []
-                    )
-                    .then(values => {
-                        response.writeHead(200, { "Content-Type": "application/json" });
-                        const body = JSON.stringify(values);
-                        response.end(body);
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        response.writeHead(500, { "Content-Type": "text/plain" });
-                        response.end('500 Interval Server Error');
-                    });
+                if (directory !== null)
+                {
+                    database.getDirectoryImageList(
+                            dbname,
+                            //directory !== null ? directory : "",
+                            //category !== null ? category : "",
+                            //subcategories !== null ? subcategories : []
+                            directory,
+                            category,
+                            subcategories
+                        )
+                        .then(values => {
+                            response.writeHead(200, { "Content-Type": "application/json" });
+                            const body = JSON.stringify(values);
+                            response.end(body);
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            response.writeHead(500, { "Content-Type": "text/plain" });
+                            response.end('500 Interval Server Error');
+                        });
+                }
+                else
+                {
+                    console.error("[ERROR] /getDirectoryImageList: No any `directory` specified in the request.");
+                    response.writeHead(404, { "Content-Type": "text/plain" });
+                    response.end('404 Bad Request. `Directory` is `null`.');
+                }
             }
             else if (url.pathname === '/getNewerImageList')
             {
