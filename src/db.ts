@@ -561,7 +561,7 @@ export function getNewerImageList(dbname: string, limit: number, offset: number)
             const db: Database = new DatabaseConstructor(dbname);
             const images: any = db.prepare(`SELECT filepath,ctime,mtime FROM ${table_name_images} ORDER BY mtime DESC LIMIT ? OFFSET ?`).all(limit, offset);
             images.sort((a: any, b: any) => {
-                return a.mtime.localeCompare(b.mtime);
+                return a.mtime < b.mtime;
             });
             resolve(images);
         }

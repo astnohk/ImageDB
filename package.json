@@ -7,7 +7,7 @@
     "execute": "node --loader ts-node/esm src/server.ts",
     "store": "node --loader ts-node/esm src/store.ts",
     "clean": "node --loader ts-node/esm src/store.ts --clean",
-    "clean": "node --loader ts-node/esm src/store.ts --stats",
+    "stats": "node --loader ts-node/esm src/store.ts --stats",
     "similar": "node searchSimilarImages.js",
     "build": "tsc -p ."
   },
