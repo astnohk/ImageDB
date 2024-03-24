@@ -125,13 +125,46 @@ async function searchDirs(root: string)
                         );
                     }
                 }
-                // Create thumbnail image
-                const image: Buffer = await createThumbnailImage(filepath)
-                    .catch(err => {
-                        console.error(`error on processing '${filepath}'`);
-                        console.error(err);
-                    }) as Buffer;
+                // Get timestamp as number
                 const basetime: Date = new Date(0);
+                const ctime: number = stat.ctime.valueOf() - basetime.valueOf();
+                const mtime: number = stat.mtime.valueOf() - basetime.valueOf();
+                // Check mtime
+                const image_info: database.ImageInfo | null = await database.getImageInfo(
+                        dbname,
+                        filepath,
+                    )
+                    .catch((err) => {
+                        console.error("[ERROR] async function searchDirs(root: string): Check mtime:");
+                        console.error(err);
+                        return;
+                    }) as database.ImageInfo;
+                let image: Buffer;
+                if (! image_info ||
+                    mtime !== image_info.mtime)
+                {
+                    // Create thumbnail image
+                    image = await createThumbnailImage(filepath)
+                        .catch((err) => {
+                            console.error("[ERROR] async function searchDirs(root: string): Create thumbnail:");
+                            console.error(err);
+                            return;
+                        }) as Buffer;
+                }
+                else
+                {
+                    // Use old image
+                    const image_file: database.ImageFile = await database.getThumbnailImage(
+                            dbname,
+                            filepath,
+                        )
+                        .catch((err) => {
+                            console.error("[ERROR] async function searchDirs(root: string): Load thumbnail from DB:");
+                            console.error(err);
+                            return;
+                        }) as database.ImageFile;
+                    image = image_file.file;
+                }
                 images.images.push(
                     {
                         filepath: filepath,
@@ -139,8 +172,8 @@ async function searchDirs(root: string)
                         category: category,
                         directory: root,
                         size: stat.size,
-                        ctime: stat.ctime.valueOf() - basetime.valueOf(),
-                        mtime: stat.mtime.valueOf() - basetime.valueOf(),
+                        ctime: ctime,
+                        mtime: mtime,
                         image: image,
                     }
                 );

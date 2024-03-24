@@ -4,7 +4,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 
-import * as constant from './const.js';
 import * as database from './db.js';
 import * as utils from './utils.js';
 
@@ -108,7 +107,7 @@ server.on('request', (request, response) => {
             {
                 const filepath = url.searchParams.get('filepath');
                 loadImage(decodeURIComponent(filepath !== null ? filepath : ""))
-                    .then((image: constant.ImageFile) => {
+                    .then((image: database.ImageFile) => {
                         response.writeHead(200, { "Content-Type": image.MIMEType });
                         response.end(image.file);
                     })
@@ -137,7 +136,7 @@ server.on('request', (request, response) => {
             {
                 const filepath = url.searchParams.get('filepath');
                 database.getThumbnailImage(dbname, decodeURIComponent(filepath !== null ? filepath : ""))
-                    .then((image: constant.ImageFile) => {
+                    .then((image: database.ImageFile) => {
                         response.writeHead(200, { "Content-Type": image.MIMEType });
                         response.end(image.file);
                     })
@@ -321,7 +320,7 @@ server.on('request', (request, response) => {
 
 function loadImage(filepath: string)
 {
-    return new Promise<constant.ImageFile>(async (resolve, reject) => {
+    return new Promise<database.ImageFile>(async (resolve, reject) => {
         try {
             if (!database.checkImageFilepath(dbname, filepath)) {
                 // Filepath is not registered

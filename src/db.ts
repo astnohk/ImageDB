@@ -2,8 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import DatabaseConstructor, { Database } from 'better-sqlite3';
 
-import * as constant from './const.js';
-
 export type DB = Database;
 
 export const table_name_directories: string = 'directories';
@@ -26,6 +24,15 @@ export type Image = {
     ctime: number,
     mtime: number,
     image: Buffer,
+};
+
+export type ImageInfo = {
+    name: string,
+    category: string,
+    directory: string,
+    size: number,
+    ctime: number,
+    mtime: number,
 };
 
 export type Directory = {
@@ -77,6 +84,11 @@ export type TableStats = {
     categories: number,
     subcategories: number,
     playlists: number,
+};
+
+export type ImageFile = {
+    file: Buffer,
+    MIMEType: string,
 };
 
 
@@ -409,14 +421,21 @@ export function checkImageFilepath(dbname: string, filepath: string)
     });
 }
 
-export function getImageInfo(dbname: string, filepath: string)
+export function getImageInfo(dbname: string, filepath: string) : Promise<ImageInfo | null>
 {
-    return new Promise((resolve, reject) => {
+    return new Promise<ImageInfo | null>((resolve, reject) => {
         try
         {
             const db: Database = new DatabaseConstructor(dbname);
             const value = db.prepare(`SELECT name,category,directory,size,ctime,mtime FROM ${table_name_images} WHERE filepath = ?`).get(decodeURIComponent(filepath));
-            resolve(value);
+            if (!! value)
+            {
+                resolve(value as ImageInfo);
+            }
+            else
+            {
+                resolve(null);
+            }
         }
         catch (err)
         {
@@ -647,14 +666,19 @@ export function deletePlaylist(dbname: string, playlist: string)
     });
 }
 
-export function getThumbnailImage(dbname: string, filepath: string)
+export function getThumbnailImage(dbname: string, filepath: string) : Promise<ImageFile>
 {
-    return new Promise<constant.ImageFile>((resolve, reject) => {
+    return new Promise<ImageFile>((resolve, reject) => {
         try
         {
             const db: Database = new DatabaseConstructor(dbname);
             const row: any = db.prepare(`SELECT image FROM ${table_name_images} WHERE filepath = ?`).get(filepath);
-            resolve({ file: row.image, MIMEType: 'image/png' });
+            resolve(
+                {
+                    file: row.image,
+                    MIMEType: 'image/png'
+                } as ImageFile,
+            );
         }
         catch (err)
         {
