@@ -130,7 +130,7 @@ window.onload = () => {
             })
             .then(() => {
                 // Update interval
-                setTimeout(getMenuList, 30 * 1000);
+                setTimeout(getMenuList, 15 * 1000);
             });
     };
     // Initialize
