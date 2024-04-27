@@ -351,6 +351,8 @@ function loadImage(filepath: string)
                 mime = 'image/jpeg';
             } else if (ext === '.png') {
                 mime = 'image/png';
+            } else if (ext === '.webp') {
+                mime = 'image/webp';
             }
             resolve({
                 file: file,

@@ -69,7 +69,7 @@ async function searchDirs(root: string)
             if (file.name.slice(-3).toLowerCase() === 'gif' ||
                 file.name.slice(-3).toLowerCase() === 'jpg' || file.name.slice(-4).toLowerCase() === 'jpeg' ||
                 file.name.slice(-3).toLowerCase() === 'png' ||
-                file.name.slice(-3).toLowerCase() === 'webp')
+                file.name.slice(-4).toLowerCase() === 'webp')
             {
                 images.directories.add(root);
                 const filepath: string = path.join(root, file.name);
