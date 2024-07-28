@@ -4,24 +4,24 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "execute": "node --loader ts-node/esm src/server.ts",
-    "store": "node --loader ts-node/esm src/store.ts",
-    "clean": "node --loader ts-node/esm src/store.ts --clean",
-    "stats": "node --loader ts-node/esm src/store.ts --stats",
-    "similar": "node searchSimilarImages.js",
+    "execute": "node --trace-deprecation --loader ts-node/esm src/server.ts",
+    "store": "node --trace-deprecation --loader ts-node/esm src/store.ts",
+    "clean": "node --trace-deprecation --loader ts-node/esm src/store.ts --clean",
+    "stats": "node --trace-deprecation --loader ts-node/esm src/store.ts --stats",
+    "similar": "node --trace-deprecation searchSimilarImages.js",
     "build": "tsc -p ."
   },
   "type": "module",
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@types/better-sqlite3": "^7.6.10",
-    "@types/node": "^20.12.7",
-    "better-sqlite3": "^9.6.0",
-    "sharp": "^0.33.3",
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^20.14.12",
+    "better-sqlite3": "^11.1.2",
+    "sharp": "^0.33.4",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.4.5",
-    "ws": "^8.17.0"
+    "typescript": "^5.5.4",
+    "ws": "^8.18.0"
   }
 }
