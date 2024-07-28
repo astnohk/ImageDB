@@ -105,3 +105,9 @@ dist
 
 # SQLite3 files
 *.db
+
+# npm package-lock.json
+package-lock.json
+
+# Vim swap files
+*.swp
