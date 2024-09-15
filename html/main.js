@@ -191,6 +191,32 @@ window.onload = () => {
                     console.error(err);
                 });
         });
+    document.getElementById('playlist_buttons_sort').addEventListener(
+        'click',
+        (e) => {
+            e.stopPropagation();
+            const images = document.getElementById('images');
+            let names = {};
+            for (let i = images.children.length - 1; i >= 0; --i) {
+                if (images.children[i].className === 'thumbnails') {
+                    names[images.children[i].originalFilePath] = images.children[i];
+                    images.removeChild(images.children[i]);
+                }
+            }
+            let sorted_keys = Object.keys(names).sort();
+            for (let key of sorted_keys)
+            {
+                const last = images.children[images.children.length - 1];
+                if (last.className === 'emptybox')
+                {
+                    images.insertBefore(names[key], last);
+                }
+                else
+                {
+                    images.appendChild(names[key]);
+                }
+            }
+        });
 
     window.addEventListener(
         'keydown',
