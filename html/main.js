@@ -207,7 +207,8 @@ window.onload = () => {
             for (let key of sorted_keys)
             {
                 const last = images.children[images.children.length - 1];
-                if (last.className === 'emptybox')
+                if (!! last &&
+                    last.className === 'emptybox')
                 {
                     images.insertBefore(names[key], last);
                 }
