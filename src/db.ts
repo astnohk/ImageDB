@@ -739,7 +739,8 @@ export function checkImageExistence(dbname: string)
         for (let val of filepaths)
         {
             const filepath: string = val.filepath;
-            if (!fs.existsSync(filepath))
+            const l = fs.readdirSync(path.dirname(filepath));
+            if (l.indexOf(path.basename(filepath)) < 0)
             {
                 console.log(`Can't find "${filepath}"`);
                 // Not found
