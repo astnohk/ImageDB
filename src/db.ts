@@ -739,12 +739,21 @@ export function checkImageExistence(dbname: string)
         for (let val of filepaths)
         {
             const filepath: string = val.filepath;
-            const l = fs.readdirSync(path.dirname(filepath));
-            if (l.indexOf(path.basename(filepath)) < 0)
+            if (! fs.existsSync(path.dirname(filepath)))
             {
                 console.log(`Can't find "${filepath}"`);
                 // Not found
                 deleteImage(dbname, filepath);
+            }
+            else
+            {
+                const l = fs.readdirSync(path.dirname(filepath));
+                if (l.indexOf(path.basename(filepath)) < 0)
+                {
+                    console.log(`Can't find "${filepath}"`);
+                    // Not found
+                    deleteImage(dbname, filepath);
+                }
             }
         }
     }
