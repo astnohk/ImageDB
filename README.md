@@ -52,6 +52,7 @@ Images can be moved by drag and drop.
 
 `click` or `tap` on the image to open full size image viewer. The image will automatically be shrinked/magnified to fit to the window.  
 You can move to prev/next image by arrow keys (`←`, `→`) or `wheel up`/`wheel down`. You can delete the image from current workspace by pressing `del` key or swipe up over half of your touch display.
+You can split the fullscreen image view by pressing `d`. You can change the left half image by arrow up/down keys (`↑`, `↓`).
 
 If you have massive image collectons, you can use vertical split mode. You can easily select images and add them into the playlist. You can also set the insert position by dragging red blinking box to insert images into any position in the playlist.
 
