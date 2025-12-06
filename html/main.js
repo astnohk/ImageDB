@@ -1,6 +1,5 @@
 'use strict';
 
-
 const url = new URL(window.location.href);
 const click_max_interval = 300; // [msec]
 var g_current_viewer = null;
@@ -1031,7 +1030,7 @@ function openImageViewer(thumbnail)
         let ind = -1;
         if (children.length > 0) {
             for (let i = 0; i < children.length; ++i) {
-                if (children[i] == thumbnail) {
+                if (children[i] == viewer.thumbnail) {
                     ind = i;
                     break;
                 }
@@ -1048,15 +1047,15 @@ function openImageViewer(thumbnail)
         }
         // Update to new src
         if (ind >= 0) {
-            thumbnail = children[ind];
-            viewer.image.src = thumbnail.originalSourceURL;
+            viewer.thumbnail = children[ind];
+            viewer.image.src = viewer.thumbnail.originalSourceURL;
             viewer.rotateImage(0);
             viewer.titleElement.innerText = `${thumbnail.filepath}`;
         }
     };
     viewer.removeImage = () => {
         const images = document.getElementById('images');
-        let removeTarget = thumbnail;
+        let removeTarget = viewer.thumbnail;
         let ind = -1;
         const children = [];
         images.childNodes.forEach((element) => {
@@ -1066,7 +1065,7 @@ function openImageViewer(thumbnail)
         });
         if (children.length > 0) {
             for (let i = 0; i < children.length; ++i) {
-                if (children[i] == thumbnail) {
+                if (children[i] == viewer.thumbnail) {
                     ind = i;
                     break;
                 }
@@ -1075,13 +1074,13 @@ function openImageViewer(thumbnail)
         }
         // Move to next image
         if (ind >= 0 &&
-            children[ind] != thumbnail)
+            children[ind] != viewer.thumbnail)
         {
             // Update to new src
-            thumbnail = children[ind];
-            viewer.image.src = thumbnail.originalSourceURL;
+            viewer.thumbnail = children[ind];
+            viewer.image.src = viewer.thumbnail.originalSourceURL;
             viewer.rotateImage(0);
-            viewer.titleElement.innerText = `${thumbnail.filepath}`;
+            viewer.titleElement.innerText = `${viewer.thumbnail.filepath}`;
         } else {
             viewer.remove();
         }
@@ -1089,14 +1088,14 @@ function openImageViewer(thumbnail)
         removeTarget.remove();
     };
     viewer.rotateImage = (rotate) => {
-        thumbnail.imageRotation = (thumbnail.imageRotation + rotate) % 4;
-        if (thumbnail.imageRotation == 0) {
+        viewer.thumbnail.imageRotation = (viewer.thumbnail.imageRotation + rotate) % 4;
+        if (viewer.thumbnail.imageRotation == 0) {
             viewer.image.style.rotate = '0deg';
-        } else if (thumbnail.imageRotation == 1) {
+        } else if (viewer.thumbnail.imageRotation == 1) {
             viewer.image.style.rotate = '90deg';
-        } else if (thumbnail.imageRotation == 2) {
+        } else if (viewer.thumbnail.imageRotation == 2) {
             viewer.image.style.rotate = '180deg';
-        } else if (thumbnail.imageRotation == 3) {
+        } else if (viewer.thumbnail.imageRotation == 3) {
             viewer.image.style.rotate = '270deg';
         }
     };
@@ -1167,6 +1166,8 @@ function divideImageViewer(thumbnail)
     {
         return;
     }
+    // Set thumbnail_sub
+    viewer.thumbnail_sub = thumbnail;
     // Second Image element
     const imagebox_sub = document.createElement('div');
     viewer.imagebox_sub = imagebox_sub;
@@ -1181,7 +1182,7 @@ function divideImageViewer(thumbnail)
     const titleElement_sub = document.createElement('div');
     viewer.titleElement_sub = titleElement_sub;
     titleElement_sub.className = 'fullscreen_viewer_imagebox_title';
-    titleElement_sub.innerText = `${thumbnail.filepath}`;
+    titleElement_sub.innerText = `${viewer.thumbnail_sub.filepath}`;
     imagebox_sub.appendChild(titleElement_sub);
 
     viewer.changeImage_sub = (direction) => {
@@ -1195,7 +1196,7 @@ function divideImageViewer(thumbnail)
         let ind = -1;
         if (children.length > 0) {
             for (let i = 0; i < children.length; ++i) {
-                if (children[i] == thumbnail) {
+                if (children[i] == viewer.thumbnail_sub) {
                     ind = i;
                     break;
                 }
@@ -1212,21 +1213,21 @@ function divideImageViewer(thumbnail)
         }
         // Update to new src
         if (ind >= 0) {
-            thumbnail = children[ind];
-            image_sub.src = thumbnail.originalSourceURL;
+            viewer.thumbnail_sub = children[ind];
+            image_sub.src = viewer.thumbnail_sub.originalSourceURL;
             viewer.rotateImage_sub(0);
-            titleElement_sub.innerText = `${thumbnail.filepath}`;
+            titleElement_sub.innerText = `${viewer.thumbnail_sub.filepath}`;
         }
     };
     viewer.rotateImage_sub = (rotate) => {
-        thumbnail.imageRotation = (thumbnail.imageRotation + rotate) % 4;
-        if (thumbnail.imageRotation == 0) {
+        viewer.thumbnail_sub.imageRotation = (viewer.thumbnail_sub.imageRotation + rotate) % 4;
+        if (viewer.thumbnail_sub.imageRotation == 0) {
             image_sub.style.rotate = '0deg';
-        } else if (thumbnail.imageRotation == 1) {
+        } else if (viewer.thumbnail_sub.imageRotation == 1) {
             image_sub.style.rotate = '90deg';
-        } else if (thumbnail.imageRotation == 2) {
+        } else if (viewer.thumbnail_sub.imageRotation == 2) {
             image_sub.style.rotate = '180deg';
-        } else if (thumbnail.imageRotation == 3) {
+        } else if (viewer.thumbnail_sub.imageRotation == 3) {
             image_sub.style.rotate = '270deg';
         }
     };
