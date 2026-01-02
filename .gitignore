@@ -111,3 +111,6 @@ package-lock.json
 
 # Vim swap files
 *.swp
+
+# Certificates
+certs/
