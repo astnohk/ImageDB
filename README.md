@@ -16,6 +16,10 @@ $ cd ImageDB
 $ npm install
 ```
 
+## Generate certificates
+
+Use openssl to create new certificates in `certs/`.
+You can generate certificates by running `./generate_certs.sh`.
 
 ## Register your images
 
