@@ -1050,7 +1050,7 @@ function openImageViewer(thumbnail)
             viewer.thumbnail = children[ind];
             viewer.image.src = viewer.thumbnail.originalSourceURL;
             viewer.rotateImage(0);
-            viewer.titleElement.innerText = `${thumbnail.filepath}`;
+            viewer.titleElement.innerText = `${viewer.thumbnail.filepath}`;
         }
     };
     viewer.removeImage = () => {
