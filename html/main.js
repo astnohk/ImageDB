@@ -1164,6 +1164,8 @@ function divideImageViewer(thumbnail)
     }
     else if (!! viewer.image_sub)
     {
+        // Close
+        closeImageViewerSub();
         return;
     }
     // Set thumbnail_sub
@@ -1231,6 +1233,21 @@ function divideImageViewer(thumbnail)
             image_sub.style.rotate = '270deg';
         }
     };
+}
+
+function closeImageViewerSub()
+{
+    let viewer = document.getElementById('fullscreen_viewer_main');
+    viewer.thumbnail_sub = null;
+    // Eliminate all sub elements
+    viewer.imagebox_sub.remove();
+    viewer.imagebox_sub = null;
+    viewer.image_sub.remove();
+    viewer.image_sub = null;
+    viewer.titleElement_sub.remove();
+    viewer.titleElement_sub = null;
+    viewer.changeImage_sub = null;
+    viewer.rotateImage_sub = null;
 }
 
 function startDragImage(image)
