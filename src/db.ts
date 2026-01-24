@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import DatabaseConstructor, { Database } from 'better-sqlite3';
+import { DatabaseSync } from 'node:sqlite';
 
-export type DB = Database;
+export type DB = DatabaseSync;
 
 export const table_name_directories: string = 'directories';
 export const table_name_categories: string = 'categories';
@@ -98,7 +98,7 @@ export type ImageFile = {
 ////////////////////////////////
 export function createTableImages(dbname: string)
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     db.prepare(`CREATE TABLE IF NOT EXISTS ${table_name_images} (` +
         'filepath TEXT NOT NULL,' +
         'name TEXT NOT NULL,' +
@@ -114,7 +114,7 @@ export function createTableImages(dbname: string)
 
 export function insertImages(dbname: string, images: Image[])
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     const insert = db.prepare(`INSERT OR REPLACE INTO ${table_name_images} (` +
         'filepath,' +
         'name,' +
@@ -134,16 +134,12 @@ export function insertImages(dbname: string, images: Image[])
         '@mtime,' +
         '@image' +
         ')');
-    const insertMany = db.transaction((vals: Image[]) => {
-        vals.forEach((val: Image) => { insert.run(val); });
-    });
-
-    insertMany(images);
+    images.forEach((val: Image) => { insert.run(val); });
 }
 
 export function createTableDirectories(dbname: string)
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     db.prepare(`CREATE TABLE IF NOT EXISTS ${table_name_directories} (` +
         'directory TEXT NOT NULL,' +
         'displayName TEXT NOT NULL,' +
@@ -153,7 +149,7 @@ export function createTableDirectories(dbname: string)
 
 export function insertDirectories(dbname: string, directories: Directory[])
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     const insert = db.prepare(`INSERT OR REPLACE INTO ${table_name_directories} (` +
         'directory,' +
         'displayName' +
@@ -161,16 +157,12 @@ export function insertDirectories(dbname: string, directories: Directory[])
         '@directory,' +
         '@displayName' +
         ')');
-    const insertMany = db.transaction((vals: Directory[]) => {
-        vals.forEach((val: Directory) => { insert.run(val); });
-    });
-
-    insertMany(directories);
+    directories.forEach((val: Directory) => { insert.run(val); });
 }
 
 export function createTableCategories(dbname: string)
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     db.prepare(`CREATE TABLE IF NOT EXISTS ${table_name_categories} (` +
         'category TEXT NOT NULL,' +
         'displayName TEXT NOT NULL,' +
@@ -180,7 +172,7 @@ export function createTableCategories(dbname: string)
 
 export function insertCategories(dbname: string, categories: Category[])
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     const insert = db.prepare(`INSERT OR REPLACE INTO ${table_name_categories} (` +
         'category,' +
         'displayName' +
@@ -188,16 +180,12 @@ export function insertCategories(dbname: string, categories: Category[])
         '@category,' +
         '@displayName' +
         ')');
-    const insertMany = db.transaction((vals: Category[]) => {
-        vals.forEach((val: Category) => { insert.run(val); });
-    });
-
-    insertMany(categories);
+    categories.forEach((val: Category) => { insert.run(val); });
 }
 
 export function createTableSubCategories(dbname: string)
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     db.prepare(`CREATE TABLE IF NOT EXISTS ${table_name_subcategories} (` +
         'category TEXT NOT NULL,' +
         'subcategory TEXT NOT NULL,' +
@@ -208,7 +196,7 @@ export function createTableSubCategories(dbname: string)
 
 export function insertSubCategories(dbname: string, subcategories: Subcategory[])
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     const insert = db.prepare(`INSERT OR IGNORE INTO ${table_name_subcategories} (` +
         'category,' +
         'subcategory,' +
@@ -218,16 +206,12 @@ export function insertSubCategories(dbname: string, subcategories: Subcategory[]
         '@subcategory,' +
         '@displayName' +
         ')');
-    const insertMany = db.transaction((vals: Subcategory[]) => {
-        vals.forEach((val: Subcategory) => { insert.run(val); });
-    });
-
-    insertMany(subcategories);
+    subcategories.forEach((val: Subcategory) => { insert.run(val); });
 }
 
 export function createTableDirectorySubCategories(dbname: string)
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     db.prepare(`CREATE TABLE IF NOT EXISTS ${table_name_directory_subcategories} (` +
         'directory TEXT NOT NULL,' +
         'category TEXT NOT NULL,' +
@@ -238,7 +222,7 @@ export function createTableDirectorySubCategories(dbname: string)
 
 export function insertDirectorySubCategories(dbname: string, values: DirectorySubcategory[])
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     const insert = db.prepare(`INSERT OR IGNORE INTO ${table_name_directory_subcategories} (` +
         'directory,' +
         'category,' +
@@ -248,17 +232,13 @@ export function insertDirectorySubCategories(dbname: string, values: DirectorySu
         '@category,' +
         '@subcategory' +
         ')');
-    const insertMany = db.transaction((vals: DirectorySubcategory[]) => {
-        vals.forEach((val: DirectorySubcategory) => { insert.run(val); });
-    });
-
-    insertMany(values);
+    values.forEach((val: DirectorySubcategory) => { insert.run(val); });
 }
 
 
 export function createTableSubCategoryImages(dbname: string)
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     db.prepare(`CREATE TABLE IF NOT EXISTS ${table_name_subcategory_images} (` +
         'category TEXT NOT NULL,' +
         'subcategory TEXT NOT NULL,' +
@@ -269,7 +249,7 @@ export function createTableSubCategoryImages(dbname: string)
 
 export function insertSubCategoryImages(dbname: string, values: SubcategoryImage[])
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     const insert = db.prepare(`INSERT OR IGNORE INTO ${table_name_subcategory_images} (` +
         'category,' +
         'subcategory,' +
@@ -279,16 +259,12 @@ export function insertSubCategoryImages(dbname: string, values: SubcategoryImage
         '@subcategory,' +
         '@filepath' +
         ')');
-    const insertMany = db.transaction((vals: SubcategoryImage[]) => {
-        vals.forEach((val: SubcategoryImage) => { insert.run(val); });
-    });
-
-    insertMany(values);
+    values.forEach((val: SubcategoryImage) => { insert.run(val); });
 }
 
 export function createTablePlaylists(dbname: string)
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     db.prepare(`CREATE TABLE IF NOT EXISTS ${table_name_playlists} (` +
         'playlist TEXT NOT NULL,' +
         'PRIMARY KEY (playlist))')
@@ -297,7 +273,7 @@ export function createTablePlaylists(dbname: string)
 
 export function insertPlaylist(dbname: string, playlist: Playlist)
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     const insert = db.prepare(`INSERT OR REPLACE INTO ${table_name_playlists} (` +
         'playlist' +
         ') VALUES (' +
@@ -308,7 +284,7 @@ export function insertPlaylist(dbname: string, playlist: Playlist)
 
 export function createTablePlaylistImages(dbname: string)
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     db.prepare(`CREATE TABLE IF NOT EXISTS ${table_name_playlist_images} (` +
         'playlist TEXT NOT NULL,' +
         'number INTEGER NOT NULL,' +
@@ -319,7 +295,7 @@ export function createTablePlaylistImages(dbname: string)
 
 export function insertPlaylistImages(dbname: string, values: PlaylistImage[])
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     const insert = db.prepare(`INSERT OR IGNORE INTO ${table_name_playlist_images} (` +
         'playlist,' +
         'number,' +
@@ -329,11 +305,7 @@ export function insertPlaylistImages(dbname: string, values: PlaylistImage[])
         '@number,' +
         '@filepath' +
         ')');
-    const insertMany = db.transaction((vals: PlaylistImage[]) => {
-        vals.forEach((val: PlaylistImage) => { insert.run(val); });
-    });
-
-    insertMany(values);
+    values.forEach((val: PlaylistImage) => { insert.run(val); });
 }
 
 
@@ -345,7 +317,7 @@ export function getDirectoryList(dbname: string)
     return new Promise((resolve, reject) => {
         try
         {
-            const db: Database = new DatabaseConstructor(dbname);
+            const db: DatabaseSync = new DatabaseSync(dbname);
             const values = db.prepare(`SELECT directory,displayName FROM ${table_name_directories}`).all();
             resolve(values);
         }
@@ -361,7 +333,7 @@ export function getDirectorySubCategoryList(dbname: string)
     return new Promise((resolve, reject) => {
         try
         {
-            const db: Database = new DatabaseConstructor(dbname);
+            const db: DatabaseSync = new DatabaseSync(dbname);
             const values = db.prepare(`SELECT directory,category,subcategory FROM ${table_name_directory_subcategories}`).all();
             resolve(values);
         }
@@ -377,7 +349,7 @@ export function getCategoryList(dbname: string)
     return new Promise((resolve, reject) => {
         try
         {
-            const db: Database = new DatabaseConstructor(dbname);
+            const db: DatabaseSync = new DatabaseSync(dbname);
             const values = db.prepare(`SELECT category,displayName FROM ${table_name_categories}`).all();
             values.sort((a: any, b: any) => a.displayName.localeCompare(b.displayName));
             resolve(values);
@@ -394,7 +366,7 @@ export function getSubCategoryList(dbname: string)
     return new Promise((resolve, reject) => {
         try
         {
-            const db: Database = new DatabaseConstructor(dbname);
+            const db: DatabaseSync = new DatabaseSync(dbname);
             const values = db.prepare(`SELECT category,subcategory,displayName FROM ${table_name_subcategories}`).all();
             resolve(values);
         }
@@ -410,7 +382,7 @@ export function checkImageFilepath(dbname: string, filepath: string)
     return new Promise((resolve, reject) => {
         try
         {
-            const db: Database = new DatabaseConstructor(dbname);
+            const db: DatabaseSync = new DatabaseSync(dbname);
             const value = db.prepare(`SELECT name FROM ${table_name_images} WHERE filepath = ?`).get(decodeURIComponent(filepath));
             resolve(!!value);
         }
@@ -426,7 +398,7 @@ export function getImageInfo(dbname: string, filepath: string) : Promise<ImageIn
     return new Promise<ImageInfo | null>((resolve, reject) => {
         try
         {
-            const db: Database = new DatabaseConstructor(dbname);
+            const db: DatabaseSync = new DatabaseSync(dbname);
             const value = db.prepare(`SELECT name,category,directory,size,ctime,mtime FROM ${table_name_images} WHERE filepath = ?`).get(decodeURIComponent(filepath));
             if (!! value)
             {
@@ -449,7 +421,7 @@ export function getCategoryImageList(dbname: string, category: string, subcatego
     return new Promise((resolve, reject) => {
         try
         {
-            const db: Database = new DatabaseConstructor(dbname);
+            const db: DatabaseSync = new DatabaseSync(dbname);
             let category_images: any = {};
             let filepath_filtered: any = new Set();
             if (!!subcategories && subcategories.length > 0)
@@ -518,7 +490,7 @@ export function getDirectoryImageList(dbname: string, directory: string, categor
     return new Promise((resolve, reject) => {
         try
         {
-            const db: Database = new DatabaseConstructor(dbname);
+            const db: DatabaseSync = new DatabaseSync(dbname);
             let directory_images: any = {};
             let filepath_filtered: any = new Set();
             {
@@ -577,7 +549,7 @@ export function getNewerImageList(dbname: string, limit: number, offset: number)
     return new Promise((resolve, reject) => {
         try
         {
-            const db: Database = new DatabaseConstructor(dbname);
+            const db: DatabaseSync = new DatabaseSync(dbname);
             const images: any = db.prepare(`SELECT filepath,ctime,mtime FROM ${table_name_images} ORDER BY mtime DESC LIMIT ? OFFSET ?`).all(limit, offset);
             images.sort((a: any, b: any) => {
                 return a.mtime < b.mtime;
@@ -596,9 +568,9 @@ export function getPlaylistList(dbname: string)
     return new Promise((resolve, reject) => {
         try
         {
-            const db: Database = new DatabaseConstructor(dbname);
+            const db: DatabaseSync = new DatabaseSync(dbname);
             const rows: any = db.prepare(`SELECT playlist FROM ${table_name_playlists}`).all();
-            rows.sort();
+            rows.sort((a: any, b: any) => a.playlist.localeCompare(b.playlist));
             resolve(rows);
         }
         catch (err)
@@ -613,7 +585,7 @@ export function getPlaylistImageList(dbname: string, playlist: string)
     return new Promise((resolve, reject) => {
         try
         {
-            const db: Database = new DatabaseConstructor(dbname);
+            const db: DatabaseSync = new DatabaseSync(dbname);
             const images: any = db
                 .prepare(`SELECT number,${table_name_playlist_images}.filepath,ctime,mtime FROM ${table_name_playlist_images} INNER JOIN ${table_name_images} ON ${table_name_playlist_images}.filepath = ${table_name_images}.filepath WHERE playlist = ?`)
                 .all(decodeURIComponent(playlist));
@@ -632,11 +604,11 @@ export function savePlaylistImageList(dbname: string, playlist: InsertingPlaylis
     return new Promise((resolve, reject) => {
         try
         {
-            const db: Database = new DatabaseConstructor(dbname);
+            const db: DatabaseSync = new DatabaseSync(dbname);
             // Delete old playlist
             db.prepare(`DELETE FROM ${table_name_playlist_images} WHERE playlist = ?`).run(playlist.playlist);
             // Add
-            insertPlaylist(dbname, playlist);
+            insertPlaylist(dbname, { playlist: playlist.playlist });
             insertPlaylistImages(dbname, playlist.images);
             resolve({ success: true });
         }
@@ -652,7 +624,7 @@ export function deletePlaylist(dbname: string, playlist: string)
     return new Promise((resolve, reject) => {
         try
         {
-            const db: Database = new DatabaseConstructor(dbname);
+            const db: DatabaseSync = new DatabaseSync(dbname);
             const name = decodeURIComponent(playlist);
             // Delete playlist
             db.prepare(`DELETE FROM ${table_name_playlists} WHERE playlist = ?`).run(name);
@@ -671,7 +643,7 @@ export function getThumbnailImage(dbname: string, filepath: string) : Promise<Im
     return new Promise<ImageFile>((resolve, reject) => {
         try
         {
-            const db: Database = new DatabaseConstructor(dbname);
+            const db: DatabaseSync = new DatabaseSync(dbname);
             const row: any = db.prepare(`SELECT image FROM ${table_name_images} WHERE filepath = ?`).get(filepath);
             resolve(
                 {
@@ -694,7 +666,7 @@ export function getThumbnailImage(dbname: string, filepath: string) : Promise<Im
 ////////////////////////////////
 export function deleteImage(dbname: string, filepath: string)
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     // Get directory, category, subcategory of target
     const info: any = db.prepare(`SELECT category,directory FROM ${table_name_images} WHERE filepath = ?`).get(filepath);
     const subcategories: any = db.prepare(`SELECT category,subcategory FROM ${table_name_subcategory_images} WHERE filepath = ?`).all(filepath);
@@ -732,7 +704,7 @@ export function deleteImage(dbname: string, filepath: string)
 
 export function checkImageExistence(dbname: string)
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     const directories: any = db.prepare(`SELECT directory FROM ${table_name_directories}`).all();
     for (let directory of directories) {
         const filepaths: any = db.prepare(`SELECT filepath FROM ${table_name_images} WHERE directory = ?`).all(directory.directory);
@@ -767,7 +739,7 @@ export type PlaylistsCount = { 'COUNT(playlist)': number };
 
 export function getStatsOfTables(dbname: string) : TableStats
 {
-    const db: Database = new DatabaseConstructor(dbname);
+    const db: DatabaseSync = new DatabaseSync(dbname);
     const images: ImagesCount = db.prepare(`SELECT COUNT(filepath) FROM ${table_name_images}`).get() as ImagesCount;
     const directories: DirectoriesCount = db.prepare(`SELECT COUNT(directory) FROM ${table_name_directories}`).get() as DirectoriesCount;
     const categories: CategoriesCount = db.prepare(`SELECT COUNT(category) FROM ${table_name_categories}`).get() as CategoriesCount;

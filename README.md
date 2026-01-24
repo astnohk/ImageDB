@@ -24,8 +24,6 @@ You can generate certificates by running `./generate_certs.sh`.
 ## Register your images
 
 `$ npm run store /path/to/your/images/directory`
-or
-`$ node store.js /path/to/your/images/directory`.
 
 ImageDB assume image files named according to following rules:
 * File name has `_` separated "category name" and "tags".
