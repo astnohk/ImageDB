@@ -534,7 +534,7 @@ export function getDirectoryImageList(dbname: string, directory: string, categor
             {
                 images.push(directory_images[filepath]);
             }
-            images.sort();
+            images.sort((a: any, b: any) => a.filepath.localeCompare(b.filepath));
             resolve(images);
         }
         catch (err)
