@@ -467,7 +467,7 @@ export function getCategoryImageList(dbname: string, category: string, subcatego
             {
                 images.push(category_images[filepath]);
             }
-            images.sort((a, b) => {
+            images.sort((a: any, b: any) => {
                 a = path.basename(a.filepath) + a.mtime;
                 b = path.basename(b.filepath) + b.mtime;
                 let A = '';
