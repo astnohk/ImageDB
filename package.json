@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "execute": "node --trace-deprecation --loader ts-node/esm src/server.ts",
+    "execute": "node --trace-deprecation --import tsx src/server.ts",
     "store": "node --trace-deprecation --loader ts-node/esm src/store.ts",
     "clean": "node --trace-deprecation --loader ts-node/esm src/store.ts --clean",
     "stats": "node --trace-deprecation --loader ts-node/esm src/store.ts --stats",
@@ -15,10 +15,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@types/node": "^25.0.10",
+    "@types/node": "^25.6.0",
     "sharp": "^0.34.5",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.3"
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
   }
 }
