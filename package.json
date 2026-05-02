@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "execute": "node --trace-deprecation --import tsx src/server.ts",
-    "store": "node --trace-deprecation --loader ts-node/esm src/store.ts",
-    "clean": "node --trace-deprecation --loader ts-node/esm src/store.ts --clean",
-    "stats": "node --trace-deprecation --loader ts-node/esm src/store.ts --stats",
+    "store": "node --trace-deprecation --import tsx src/store.ts",
+    "clean": "node --trace-deprecation --import tsx src/store.ts --clean",
+    "stats": "node --trace-deprecation --import tsx src/store.ts --stats",
     "similar": "node --trace-deprecation searchSimilarImages.js",
     "build": "tsc -p ."
   },
